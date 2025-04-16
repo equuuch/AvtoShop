@@ -23,7 +23,7 @@ const Contact = () => {
         {/* Вставка карты с точкой */}
         <div className="contact__map">
           <iframe
-            src="https://yandex.ru/map-widget/v1/?um=constructor%3A1604a5d1bdb01b67cf53b0f8ad20be1d1fe9b3e62531cc6e9c8b42343e4e7b96&amp;source=constructor"
+            src="https://yandex.ru/map-widget/v1/?ll=40.130395%2C45.870130&pt=40.130395%2C45.870130&z=17&l=map"
             width="100%"
             height="450"
             frameBorder="0"
@@ -32,7 +32,7 @@ const Contact = () => {
             aria-hidden="false"
             tabIndex="0"
           ></iframe>
-        </div>
+       </div>
       </div>
     </section>
   );
