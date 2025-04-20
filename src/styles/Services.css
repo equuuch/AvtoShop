@@ -4,7 +4,7 @@
     color: #fff;
     padding: 80px 24px;
     font-family: 'Montserrat', sans-serif;
-    background-size: 100% 12px; /* Размер линии */
+    background-size: 100% 12px; 
 }
 
 .services__container {
@@ -16,7 +16,7 @@
     font-size: 2.5rem;
     margin-bottom: 48px;
     text-align: center;
-    color: #FF5733; /* Используем тот же оранжевый акцент */
+    color: #FF5733; 
     text-shadow: 0 0 12px rgba(255, 87, 51, 0.6);
 }
 
@@ -41,10 +41,9 @@
     flex-direction: column;
     justify-content: flex-start;
     height: auto;
-    min-height: 240px;
+    min-height: 180px; 
 }
 
-/* При открытии карточки — увеличивается высота */
 .service__card.expanded {
     background-color: #333;
     box-shadow: 0 0 20px rgba(255, 87, 51, 0.5);
@@ -96,20 +95,22 @@
     color: #FF5733;
 }
 
-
-/* Анимация для плавного появления */
-@keyframes fadeInUp {
+@keyframes fadeInSmooth {
     0% {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(30px); 
     }
     100% {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0); 
     }
 }
 
-/* Задержка анимации для разных карточек */
+.service__card {
+    animation: fadeInSmooth 1s ease-out forwards;
+    opacity: 0; 
+}
+
 .service__card:nth-child(1) {
     animation-delay: 0.2s;
 }
@@ -159,32 +160,4 @@
 .service__card:hover {
     transform: translateY(-5px);
     box-shadow: 0 0 16px rgba(255, 87, 51, 0.5);
-}
-
-.service__icon {
-    font-size: 2rem;
-    margin-bottom: 12px;
-    color: #45EFDA; /* Бирюзовый акцент для иконок */
-}
-
-.service__name {
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: #eee;
-    margin-bottom: 16px;
-}
-
-.service__details {
-    font-size: 0.9rem;
-    color: #bbb;
-    margin-top: 16px;
-    text-align: left;
-}
-
-.service__details p {
-    margin: 4px 0;
-}
-
-.service__details strong {
-    color: #FF5733;
 }

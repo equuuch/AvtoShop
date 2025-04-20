@@ -1,12 +1,13 @@
 .login-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+  padding-top: 80px;
+  padding-bottom: 80px; 
   background: linear-gradient(135deg, #1f1f1f, #0f0f0f);
-  padding: 20px;
+  min-height: auto; 
 }
 
+/* Основной контейнер формы */
 .login-form {
   background: #fff;
   padding: 40px;
@@ -15,24 +16,27 @@
   width: 100%;
   max-width: 450px;
   transition: all 0.3s ease;
+  text-align: center;
 }
 
+/* Заголовок формы */
 .login-title {
-  text-align: center;
   margin-bottom: 30px;
   color: #2c3e50;
   font-size: 24px;
   font-weight: 600;
 }
 
+/* Стиль для каждой группы ввода */
 .login-input-group {
   position: relative;
   margin-bottom: 30px;
 }
 
+/* Основной стиль для input-полей */
 .login-input {
   width: 100%;
-  padding: 15px 10px 5px 0;
+  padding: 20px 10px 5px 0;
   border: none;
   border-bottom: 2px solid #ddd;
   font-size: 16px;
@@ -41,46 +45,36 @@
   outline: none;
 }
 
+/* Лейблы для input-полей (теперь всегда фиксированы и маленькие) */
 .login-label {
   position: absolute;
-  top: 15px;
+  top: -12px;
   left: 0;
-  color: #7f8c8d;
-  font-size: 16px;
+  color: #FF5733;
+  font-size: 12px;
   pointer-events: none;
   transition: all 0.3s ease;
 }
 
-.login-input-border {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: #FF5733;
-  transition: all 0.3s ease;
-}
-
+/* Убираем фокусную анимацию */
 .login-input-group.focused .login-label {
-  top: -15px;
+  top: -12px;
   font-size: 12px;
   color: #FF5733;
 }
 
-.login-input-group.focused .login-input-border {
-  width: 100%;
-}
-
+/* Стиль для ошибки */
 .login-error {
   color: #e74c3c;
   background: #fadbd8;
   padding: 12px;
   border-radius: 6px;
   margin-bottom: 20px;
-  text-align: center;
   font-size: 14px;
+  text-align: center;
 }
 
+/* Стиль для кнопки */
 .login-button {
   width: 100%;
   padding: 14px;

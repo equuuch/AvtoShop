@@ -1,83 +1,111 @@
-.admin-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Arial', sans-serif;
-  color: #333;
+/* Общие переменные и настройки */
+:root {
+  --accent-color: #FF5733;
+  --bg-dark: #111;
+  --bg-light: #1c1c1c;
+  --bg-card: #1a1a1a;
+  --text-primary: #eee;
+  --text-secondary: #ccc;
+  --text-error: #ffaaaa;
+  --font-main: 'Montserrat', sans-serif;
+  --border-color: #333;
+  --shadow-light: rgba(255, 87, 51, 0.1);
+  --shadow-hover: rgba(255, 87, 51, 0.3);
 }
 
+/* Контейнер */
+.admin-container {
+  max-width: 1100px;
+  margin: 60px auto 120px;
+  padding: 2rem;
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  background-color: var(--bg-dark);
+  border-radius: 12px;
+  box-shadow: 0 0 25px var(--shadow-light);
+}
+
+/* Заголовок и кнопка выхода */
 .admin-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e1e1e1;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .admin-title {
-  font-size: 1.8rem;
-  color: #c0392b;
+  font-size: 2rem;
+  color: var(--accent-color);
   margin: 0;
+  text-shadow: 0 0 6px var(--shadow-light);
 }
 
 .admin-logout-btn {
-  background-color: #e74c3c;
-  color: white;
+  background-color: var(--accent-color);
+  color: var(--bg-dark);
   border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
   font-size: 0.9rem;
-  transition: background-color 0.3s;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
 }
 
 .admin-logout-btn:hover {
-  background-color: #c0392b;
+  background-color: #e14c2d;
+  transform: scale(1.05);
 }
 
+/* Основной контент */
 .admin-content {
   display: grid;
   grid-template-columns: 1fr 2fr;
   gap: 2rem;
 }
 
-.admin-form-section {
-  background: #fff;
+.admin-form-section,
+.admin-services-section {
+  background: var(--bg-light);
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  box-shadow: 0 0 10px var(--shadow-light);
 }
 
 .admin-section-title {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   margin-top: 0;
   margin-bottom: 1.5rem;
-  color: #2c3e50;
+  color: var(--accent-color);
+  text-shadow: 0 0 5px var(--shadow-light);
 }
 
+/* Форма */
 .admin-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.admin-form-group {
-  margin-bottom: 1rem;
-}
-
-.admin-input, .admin-textarea {
+.admin-input,
+.admin-textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.7rem;
+  background-color: #222;
+  border: 1px solid #444;
+  color: var(--text-primary);
+  border-radius: 6px;
   font-size: 0.95rem;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.admin-input:focus, .admin-textarea:focus {
+.admin-input:focus,
+.admin-textarea:focus {
   outline: none;
-  border-color: #c0392b;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 8px var(--shadow-hover);
 }
 
 .admin-textarea {
@@ -85,28 +113,65 @@
   resize: vertical;
 }
 
-.admin-submit-btn {
-  background-color: #c0392b;
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 4px;
+/* Кнопки */
+.admin-submit-btn,
+.admin-cancel-btn,
+.admin-edit-btn,
+.admin-delete-btn {
+  padding: 0.3rem 0.8rem;
+  margin-top: 0.3rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
+  border: none;
+  margin-right: 0.5rem;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.admin-submit-btn:last-child,
+.admin-cancel-btn:last-child,
+.admin-edit-btn:last-child,
+.admin-delete-btn:last-child {
+  margin-right: 0;
+}
+
+.admin-submit-btn {
+  background-color: var(--accent-color);
+  color: var(--bg-dark);
+  padding: 0.7rem 1.4rem;
   font-size: 1rem;
-  transition: background-color 0.3s;
+  font-weight: 600;
+  border-radius: 8px;
+  width: 100%;  /* Растягивает кнопку на всю ширину родительского элемента */
+  box-shadow: 0 0 10px var(--shadow-hover);
 }
 
 .admin-submit-btn:hover {
+  background-color: #e14c2d;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 87, 51, 0.4);
+}
+
+.admin-edit-btn {
+  background-color: var(--accent-color);
+  color: var(--bg-dark);
+}
+
+.admin-edit-btn:hover {
+  background-color: #e14c2d;
+}
+
+.admin-delete-btn {
   background-color: #c0392b;
+  color: white;
 }
 
-.admin-services-section {
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+.admin-delete-btn:hover {
+  background-color: #a93226;
 }
 
+/* Список услуг */
 .admin-services-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -114,20 +179,20 @@
 }
 
 .admin-service-card {
-  border: 1px solid #e1e1e1;
-  border-radius: 6px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 1rem;
-  cursor: pointer;
   transition: all 0.3s;
 }
 
 .admin-service-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 12px var(--shadow-light);
 }
 
 .admin-service-card.active {
-  border-color: #c0392b;
-  background-color: #f8fafc;
+  border-color: var(--accent-color);
+  background-color: #222;
 }
 
 .admin-service-header {
@@ -138,110 +203,44 @@
 
 .admin-service-icon {
   font-size: 1.5rem;
+  color: var(--accent-color);
 }
 
 .admin-service-name {
-  margin: 0;
   font-size: 1.1rem;
-  color: #2c3e50;
+  color: var(--text-primary);
+  margin: 0;
   flex-grow: 1;
 }
 
 .admin-service-price {
   font-weight: bold;
-  color: #c0392b;
+  color: var(--accent-color);
 }
 
 .admin-service-details {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px dashed #ddd;
+  border-top: 1px dashed #444;
 }
 
 .admin-service-description {
-  margin: 0 0 1rem 0;
-  color: #555;
-}
-
-.admin-service-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.admin-delete-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.admin-delete-btn:hover {
-  background-color: #c0392b;
-}
-
-.admin-error {
-  background-color: #fadbd8;
-  color: #e74c3c;
-  padding: 1rem;
-  border-radius: 4px;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
+}
+
+/* Сообщения */
+.admin-error {
+  background-color: #3b0f0f;
+  color: var(--text-error);
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 1px solid #7f1d1d;
 }
 
 .admin-loading {
   text-align: center;
   padding: 2rem;
-  color: #555;
-}
-
-.admin-cancel-btn {
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  padding: 0.75rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-  margin-left: 1rem;
-}
-
-.admin-cancel-btn:hover {
-  background-color: #7f8c8d;
-}
-
-.admin-service-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem; 
-}
-
-.admin-edit-btn {
-  background-color: #c0392b;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.admin-edit-btn:hover {
-  background-color: #c0392b;
-}
-
-.admin-delete-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.admin-delete-btn:hover {
-  background-color: #c0392b;
+  color: #aaa;
 }

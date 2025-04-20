@@ -36,10 +36,15 @@ export default function Header() {
     setIsLoggedIn(false);
   };
 
+  // Обработчик для логотипа
+  const handleLogoClick = () => {
+    navigate('/'); // Переход на главную страницу
+  };
+
   return (
     <header className={`header ${scrolled ? 'scrolled' : ''}`}>
       <div className="container header__content">
-        <div className="header__logo">
+        <div className="header__logo" onClick={handleLogoClick}>
           <span>AvtoShop</span>
         </div>
 

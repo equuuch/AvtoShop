@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Services.css';
+import wrenchIcon from '../assets/wrenchs_4273441.png'; 
 
 const Services = () => {
   const [services, setServices] = useState([]);
@@ -52,7 +53,7 @@ const Services = () => {
               onClick={() => handleClick(service)}
             >
               <div className="service__icon">
-                <img src={service.icon} alt={service.name} />
+                <img src={wrenchIcon} alt={service.name} />
               </div>
               <h3 className="service__name">{service.name}</h3>
 

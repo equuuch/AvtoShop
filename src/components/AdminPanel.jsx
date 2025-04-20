@@ -105,7 +105,8 @@ const AdminPanel = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('myProject_isAdmin');
+navigate('/');
     navigate('/login');
   };
 

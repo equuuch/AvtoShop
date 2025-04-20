@@ -3,7 +3,7 @@
   color: #fff;
   padding: 80px 24px;
   font-family: 'Montserrat', sans-serif;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); /* Легкая тень для выделения */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); /* Легкая тень */
 }
 
 .testimonials__container {
@@ -68,4 +68,85 @@
 .testimonial__rating {
   font-size: 1.2rem;
   color: #FFD700; /* Золотой для звезд рейтинга */
+}
+
+.testimonial__form {
+  margin-top: 32px;
+  background-color: #292929;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+.testimonial__form h3 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  color: #FF5733;
+}
+
+.testimonial__form input,
+.testimonial__form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background-color: #111;
+  color: #fff;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.testimonial__form button {
+  background-color: #FF5733;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.testimonial__form button:hover {
+  background-color: #e64a19;
+}
+
+/* Кнопка "Оставить отзыв" */
+.testimonial__toggle-btn {
+  margin-top: 40px;
+  background-color: transparent;
+  border: 2px solid #FF5733;
+  color: #FF5733;
+  font-size: 1.1rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.testimonial__toggle-btn:hover {
+  background-color: #FF5733;
+  color: #fff;
+}
+
+/* Анимация появления */
+.testimonial__form.animated {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
