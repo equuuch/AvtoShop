@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,32 +12,12 @@ export default function Header() {
       setScrolled(window.scrollY > 50);
     };
 
-    // Проверяем наличие токена при загрузке
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-    }
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleAdminClick = () => {
-    if (isLoggedIn) {
-      navigate('/admin');
-    } else {
-      navigate('/login');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-  };
-
-  // Обработчик для логотипа
   const handleLogoClick = () => {
-    navigate('/'); // Переход на главную страницу
+    navigate('/');
   };
 
   return (
@@ -55,14 +34,6 @@ export default function Header() {
           <a href="#reviews">Отзывы</a>
           <a href="#contact">Контакты</a>
           <a href="/login">Вход</a>
-          {/* {isLoggedIn ? (
-            <>
-              <button className="admin-btn" onClick={handleAdminClick}>Админ-панель</button>
-              <button className="logout-btn" onClick={handleLogout}>Выйти</button>
-            </>
-          ) : (
-            <a href="/login">Вход</a>
-          )} */}
         </nav>
 
         <div className="burger" onClick={() => setMenuOpen(!menuOpen)}>

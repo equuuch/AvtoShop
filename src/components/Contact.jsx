@@ -20,7 +20,6 @@ const Contact = () => {
           </div>
         </div>
 
-        {/* Вставка карты с точкой */}
         <div className="contact__map">
           <iframe
             src="https://yandex.ru/map-widget/v1/?ll=40.130395%2C45.870130&pt=40.130395%2C45.870130&z=17&l=map"

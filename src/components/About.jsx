@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import '../styles/About.css';
 
 const About = () => {
-  // Функция для добавления класса для анимации при скроллинге
   useEffect(() => {
     const elements = document.querySelectorAll('.about__text');
 
@@ -16,7 +15,7 @@ const About = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Для сразу анимации элементов, которые уже в области видимости
+    handleScroll(); 
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
