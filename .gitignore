@@ -22,5 +22,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Файлы с паролями и секретами
 passwords.txt
 passwords and other.txt
