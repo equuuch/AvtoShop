@@ -2,205 +2,272 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../styles/AdminPanel.css';
+import { FiUsers, FiEdit, FiTrash2, FiPlusCircle, FiTool, FiLogOut, FiPhone, FiTruck } from 'react-icons/fi';
 
-// Create an axios instance for authenticated requests
-const api = axios.create({
-  baseURL: '/api',
-});
+const api = axios.create({ baseURL: '/api' });
 
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('authToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+// --- Модальные окна ---
+
+const ServiceModal = ({ service, onSave, onClose, isVisible }) => {
+  const [edited, setEdited] = useState({});
+  useEffect(() => {
+    setEdited(service || { name: '', description: '', price: '' });
+  }, [service, isVisible]);
+
+  if (!isVisible) return null;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'price') {
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setEdited(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setEdited(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...edited, price: Number(edited.price) || 0 });
+  };
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-content">
+        <form onSubmit={handleSubmit}>
+          <h2>{service?.id ? 'Редактировать услугу' : 'Добавить услугу'}</h2>
+          <div className="form-group"><label>Название</label><input type="text" name="name" value={edited.name || ''} onChange={handleChange} required /></div>
+          <div className="form-group"><label>Описание</label><textarea name="description" value={edited.description || ''} onChange={handleChange} required></textarea></div>
+          <div className="form-group"><label>Цена</label><input type="text" name="price" placeholder="Например, 1500" value={edited.price ? `${edited.price} ₽` : ''} onChange={handleChange} required /></div>
+          <div className="modal-actions"><button type="button" onClick={onClose} className="btn-secondary">Отмена</button><button type="submit" className="btn-primary">Сохранить</button></div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const ClientModal = ({ client, onSave, onClose, isVisible }) => {
+    const [edited, setEdited] = useState({});
+    useEffect(() => { 
+        setEdited(client || { name: '', phone: '', car: '' });
+    }, [client, isVisible]);
+
+    if (!isVisible) return null;
+
+    const handlePhoneChange = (e) => {
+        let input = e.target.value.replace(/\D/g, '');
+        if (input.length > 0 && !['7', '8'].includes(input[0])) {
+          input = '7' + input;
+        }
+        let formatted = '+7';
+        if (input.length > 1) formatted += ` (${input.substring(1, 4)}`;
+        if (input.length >= 5) formatted += `) ${input.substring(4, 7)}`;
+        if (input.length >= 8) formatted += `-${input.substring(7, 9)}`;
+        if (input.length >= 10) formatted += `-${input.substring(9, 11)}`;
+        setEdited(prev => ({ ...prev, phone: formatted.slice(0, 18) }));
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setEdited(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => { e.preventDefault(); onSave(edited); };
+
+    return (
+      <div className="modal-backdrop">
+        <div className="modal-content">
+          <form onSubmit={handleSubmit}>
+            <h2>{client?.id ? 'Редактировать клиента' : 'Добавить клиента'}</h2>
+            <div className="form-group"><label>ФИО</label><input type="text" name="name" value={edited.name || ''} onChange={handleChange} required /></div>
+            <div className="form-group"><label>Телефон</label><input type="tel" name="phone" value={edited.phone || ''} onChange={handlePhoneChange} placeholder="+7 (999) 123-45-67" required /></div>
+            <div className="form-group"><label>Автомобиль</label><input type="text" name="car" value={edited.car || ''} onChange={handleChange} required /></div>
+            <div className="modal-actions"><button type="button" onClick={onClose} className="btn-secondary">Отмена</button><button type="submit" className="btn-primary">Сохранить</button></div>
+          </form>
+        </div>
+      </div>
+    );
+};
+
+// --- Основной компонент админ-панели ---
 const AdminPanel = () => {
+  const [activeTab, setActiveTab] = useState('services');
   const [services, setServices] = useState([]);
+  const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  
+  const [isServiceModalVisible, setServiceModalVisible] = useState(false);
+  const [editingService, setEditingService] = useState(null);
+
+  const [isClientModalVisible, setClientModalVisible] = useState(false);
+  const [editingClient, setEditingClient] = useState(null);
+
   const navigate = useNavigate();
 
-  // Renamed to fetchServices for clarity
-  const fetchServices = useCallback(async () => {
-    try {
-      const response = await api.get('/products');
-      setServices(response.data);
-    } catch (error) {
-      console.error("Failed to fetch services:", error);
-      // Optional: Handle unauthorized access, e.g., redirect to login
-      if (error.response && error.response.status === 401) {
-        navigate('/login');
-      }
+  const handleApiError = useCallback((error) => {
+    console.error("API Error:", error);
+    if (error.response && [401, 403].includes(error.response.status)) {
+      alert("Ваша сессия истекла или у вас нет прав. Пожалуйста, войдите заново.");
+      localStorage.removeItem('authToken'); // Сразу чистим старый токен
+      navigate('/login');
+    } else {
+      // Для других ошибок можно показать общее сообщение
+      alert('Произошла ошибка при выполнении запроса. Проверьте консоль бэкенда.');
     }
   }, [navigate]);
+
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Запрашиваем и услуги, и клиентов
+      const [servicesRes, clientsRes] = await Promise.all([api.get('/products'), api.get('/clients')]);
+      setServices(servicesRes.data);
+      setClients(clientsRes.data);
+    } catch (error) {
+        handleApiError(error)
+    } finally {
+      setIsLoading(false);
+    }
+  }, [handleApiError]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      navigate('/login');
-      return;
+        navigate('/login');
+    } else {
+        fetchData();
     }
-
-    setIsLoading(true);
-    fetchServices().finally(() => setIsLoading(false));
-  }, [navigate, fetchServices]);
+  }, [navigate, fetchData]);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     navigate('/');
   };
 
-  const handleAddService = async () => {
-    const newServiceName = prompt("Введите название новой услуги:", "Новая услуга");
-    if (!newServiceName) return;
-
-    const newService = {
-      name: newServiceName,
-      description: 'Описание по умолчанию',
-      price: 0,
-    };
+  // Универсальная функция сохранения (для услуг и клиентов)
+  const handleSave = async (item, type) => {
+    const isNew = !item.id;
+    const endpoint = type === 'services' ? '/products' : '/clients';
+    const method = isNew ? 'post' : 'put';
+    const url = isNew ? endpoint : `${endpoint}/${item.id}`;
 
     try {
-      const response = await api.post('/products', newService);
-      setServices([...services, response.data]); // Add new service to the list
-      setSelectedService(response.data); // Select the new service
-      setIsEditing(true); // Immediately open for editing
+      const { data } = await api[method](url, item);
+      if (type === 'services') {
+        if (isNew) setServices(p => [...p, data]);
+        else setServices(p => p.map(i => i.id === data.id ? data : i));
+        setServiceModalVisible(false);
+      } else { // 'clients'
+        if (isNew) setClients(p => [...p, data]);
+        else setClients(p => p.map(i => i.id === data.id ? data : i));
+        setClientModalVisible(false);
+      }
     } catch (error) {
-      console.error("Failed to add service:", error);
-      alert('Не удалось добавить услугу.');
+      handleApiError(error);
     }
   };
 
-  const handleRemoveService = async (service) => {
-    if (!service || !service.id) {
-        alert('Сначала выберите услугу для удаления.');
-        return;
-    }
-
-    if (!window.confirm(`Вы уверены, что хотите удалить "${service.name}"?`)) return;
-
+  // Универсальная функция удаления
+  const handleDelete = async (id, type) => {
+    if (!window.confirm(`Вы уверены, что хотите удалить этот элемент?`)) return;
+    const endpoint = type === 'services' ? '/products' : '/clients';
     try {
-      await api.delete(`/products/${service.id}`);
-      setServices(services.filter(s => s.id !== service.id));
-      setSelectedService(null);
-      setIsEditing(false);
+      await api.delete(`${endpoint}/${id}`);
+      if (type === 'services') {
+        setServices(prev => prev.filter(s => s.id !== id));
+      } else { // 'clients'
+        setClients(prev => prev.filter(c => c.id !== id));
+      }
     } catch (error) {
-      console.error("Failed to delete service:", error);
-      alert('Не удалось удалить услугу.');
+      handleApiError(error);
     }
   };
 
-  const handleUpdateService = async (e) => {
-    e.preventDefault();
-    if (!selectedService) return;
-
-    try {
-      const response = await api.put(`/products/${selectedService.id}`, selectedService);
-      // Update the list with the new data
-      setServices(services.map(s => (s.id === selectedService.id ? response.data : s)));
-      setIsEditing(false); // Exit editing mode
-    } catch (error) {
-      console.error("Failed to update service:", error);
-      alert('Не удалось обновить услугу.');
+  const openAddModal = () => {
+    if (activeTab === 'services') {
+        setEditingService(null); setServiceModalVisible(true);
+    } else {
+        setEditingClient(null); setClientModalVisible(true);
     }
   };
-  
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setSelectedService({ ...selectedService, [name]: value });
+
+  const openEditModal = (item) => {
+    if (activeTab === 'services') {
+        setEditingService(item); setServiceModalVisible(true);
+    } else {
+        setEditingClient(item); setClientModalVisible(true);
+    }
   };
 
   if (isLoading) return <div className="admin-loading">Загрузка...</div>;
 
+  // Рендеринг сеток
+  const servicesGrid = (
+    <div className="items-grid">
+      {services.map(service => (
+        <div key={service.id} className="item-card">
+          <div className="card-header"><h3>{service.name}</h3><span className="item-price">{service.price} ₽</span></div>
+          <p className="item-description">{service.description}</p>
+          <div className="card-actions">
+            <button onClick={() => openEditModal(service)} className="btn-icon"><FiEdit /></button>
+            <button onClick={() => handleDelete(service.id, 'services')} className="btn-icon btn-danger"><FiTrash2 /></button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const clientsGrid = (
+    <div className="items-grid">
+      {clients.map(client => (
+        <div key={client.id} className="item-card">
+          <div className="card-header">
+            <h3>{client.name}</h3>
+            <span className="item-car">
+              <FiTruck style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+              <span>{client.car}</span>
+            </span>
+          </div>
+          <p className="item-phone">
+            <FiPhone style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+            <span>{client.phone}</span>
+          </p>
+          <div className="card-actions">
+            <button onClick={() => openEditModal(client)} className="btn-icon"><FiEdit /></button>
+            <button onClick={() => handleDelete(client.id, 'clients')} className="btn-icon btn-danger"><FiTrash2 /></button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="admin-container">
-      <div className="admin-header">
-        <h1 className="admin-title">Админ-панель</h1>
-        <button onClick={handleLogout} className="admin-logout-btn">Выйти</button>
-      </div>
-      <div className="admin-content">
-        <div className="admin-sidebar">
-            <h3>Управление</h3>
-            <button className="admin-sidebar-btn admin-add-btn" onClick={handleAddService}>
-                Добавить услугу
-            </button>
-            <button className="admin-sidebar-btn admin-remove-btn" onClick={() => handleRemoveService(selectedService)}>
-                Удалить выбранное
-            </button>
+    <div className="admin-panel-fullscreen">
+      <header className="admin-panel-header">
+        <div className="admin-panel-tabs">
+          <button onClick={() => setActiveTab('services')} className={`tab-btn ${activeTab === 'services' ? 'active' : ''}`}><FiTool style={{marginRight: '8px'}}/> Услуги</button>
+          <button onClick={() => setActiveTab('clients')} className={`tab-btn ${activeTab === 'clients' ? 'active' : ''}`}><FiUsers style={{marginRight: '8px'}}/> Клиенты</button>
         </div>
-
-        <div className="admin-main-content">
-            <div className="admin-list-section">
-              <h3 className="admin-list-title">Список услуг</h3>
-              <div className="admin-list-scroll">
-                {services.map(service => (
-                  <div 
-                    key={service.id}
-                    className={`admin-list-item ${selectedService?.id === service.id ? 'selected' : ''}`}
-                    onClick={() => {
-                        setSelectedService(service)
-                        setIsEditing(false); // Reset editing state on new selection
-                    }}
-                  >
-                    <span className="admin-item-name">{service.name}</span>
-                    <span className="admin-item-price">{service.price} ₽</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="admin-info-section">
-                <h2 className="admin-info-title">Информация об услуге</h2>
-                <div className="admin-info-content">
-                {selectedService ? (
-                  isEditing ? (
-                    <form onSubmit={handleUpdateService} className="admin-edit-form">
-                      <div className="admin-info-row">
-                          <label className="admin-label">Название:</label>
-                          <input type="text" name="name" value={selectedService.name} onChange={handleInputChange} className="admin-input"/>
-                      </div>
-                      <div className="admin-info-row">
-                          <label className="admin-label">Описание:</label>
-                          <textarea name="description" value={selectedService.description || ''} onChange={handleInputChange} className="admin-textarea"></textarea>
-                      </div>
-                      <div className="admin-info-row">
-                          <label className="admin-label">Цена:</label>
-                          <input type="number" name="price" value={selectedService.price} onChange={handleInputChange} className="admin-input"/>
-                      </div>
-                      <div className="admin-form-buttons">
-                        <button type="submit" className="admin-btn-save">Сохранить</button>
-                        <button type="button" className="admin-btn-cancel" onClick={() => setIsEditing(false)}>Отмена</button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="admin-service-details">
-                       <div className="admin-info-row">
-                          <span className="admin-label">Название:</span>
-                          <span className="admin-value">{selectedService.name}</span>
-                        </div>
-                        <div className="admin-info-row">
-                          <span className="admin-label">Описание:</span>
-                          <span className="admin-value">{selectedService.description || '---'}</span>
-                        </div>
-                        <div className="admin-info-row">
-                          <span className="admin-label">Цена:</span>
-                          <span className="admin-value admin-price">{selectedService.price} ₽</span>
-                        </div>
-                        <button className="admin-btn-edit" onClick={() => setIsEditing(true)}>Редактировать</button>
-                    </div>
-                  )
-                ) : (
-                  <div className="admin-info-empty">
-                    Выберите услугу из списка, чтобы посмотреть детали или добавить новую.
-                  </div>
-                )}
-                </div>
-            </div>
+        <div className="admin-header-actions">
+          <button onClick={openAddModal} className="add-item-btn"><FiPlusCircle style={{marginRight: '8px'}}/> Добавить {activeTab === 'services' ? 'услугу' : 'клиента'}</button>
+          <button onClick={handleLogout} className="admin-logout-btn"><FiLogOut style={{marginRight: '8px'}}/> Выйти</button>
         </div>
-      </div>
+      </header>
+
+      <main>
+        {activeTab === 'services' ? servicesGrid : clientsGrid}
+        {(activeTab === 'services' && services.length === 0) && <div className="empty-state">Услуги пока не добавлены.</div>}
+        {(activeTab === 'clients' && clients.length === 0) && <div className="empty-state">Клиенты пока не добавлены.</div>}
+      </main>
+
+      <ServiceModal isVisible={isServiceModalVisible} service={editingService} onSave={(item) => handleSave(item, 'services')} onClose={() => setServiceModalVisible(false)} />
+      <ClientModal isVisible={isClientModalVisible} client={editingClient} onSave={(item) => handleSave(item, 'clients')} onClose={() => setClientModalVisible(false)} />
     </div>
   );
 };

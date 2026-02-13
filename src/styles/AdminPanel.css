@@ -1,394 +1,259 @@
+/* Обновленные стили для AdminPanel.css под новую JSX-структуру */
 :root {
   --accent-color: #FF5733;
   --accent-hover: #e14c2d;
-  --accent-dark: #c13e1f;
   --bg-dark: #111;
   --bg-light: #1c1c1c;
-  --bg-card: #1a1a1a;
   --text-primary: #eee;
   --text-secondary: #ccc;
-  --font-main: 'Montserrat', sans-serif;
   --border-color: #333;
   --shadow-light: rgba(255, 87, 51, 0.1);
-  --panel-width: 600px;
-  --panel-height: 600px;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background-color: #0a0a0a;
-  font-family: var(--font-main);
-}
-
-.admin-container {
-  max-width: 1300px;
-  margin: 60px auto 120px;
-  padding: 2rem;
-  color: var(--text-primary);
-  background-color: var(--bg-dark);
-  border-radius: 12px;
-  box-shadow: 0 0 25px var(--shadow-light);
-}
-
-.admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.admin-title {
-  font-size: 2rem;
-  color: var(--accent-color);
-  margin: 0;
-  text-shadow: 0 0 6px var(--shadow-light);
-}
-
-.admin-logout-btn {
-  background-color: var(--accent-color);
-  color: var(--bg-dark);
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.admin-logout-btn:hover {
-  background-color: var(--accent-hover);
-  transform: scale(1.05);
-}
-
-.admin-content {
-  display: grid;
-  grid-template-columns: 220px 1fr;
-  gap: 2rem;
-  min-height: 700px;
-}
-
-/* Левая колонка с кнопками - ВСЕ КНОПКИ ОРАНЖЕВЫЕ */
-.admin-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.admin-sidebar-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 1rem;
-  background-color: var(--accent-color) !important;
-  border: 1px solid var(--accent-color) !important;
-  border-radius: 8px;
-  color: var(--bg-dark) !important;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-align: left;
-  width: 100%;
-  box-shadow: 0 0 10px var(--shadow-light);
-}
-
-.admin-sidebar-btn:hover {
-  background-color: var(--accent-hover) !important;
-  border-color: var(--accent-hover) !important;
-  transform: translateX(5px);
-  box-shadow: 0 0 15px rgba(255, 87, 51, 0.4);
-}
-
-.admin-sidebar-btn.active {
-  background-color: var(--accent-dark) !important;
-  border-color: var(--accent-dark) !important;
-  color: white !important;
-  font-weight: 600;
-  box-shadow: 0 0 15px rgba(255, 87, 51, 0.5);
-}
-
-.admin-add-btn,
-.admin-clients-btn,
-.admin-remove-btn {
-  background-color: var(--accent-color) !important;
-  border-color: var(--accent-color) !important;
-}
-
-.admin-add-btn:hover,
-.admin-clients-btn:hover,
-.admin-remove-btn:hover {
-  background-color: var(--accent-hover) !important;
-  border-color: var(--accent-hover) !important;
-}
-
-.admin-btn-icon {
-  font-size: 1.2rem;
-  min-width: 24px;
-  color: var(--bg-dark);
-}
-
-.admin-sidebar-btn.active .admin-btn-icon {
-  color: white;
-}
-
-/* Правая колонка - КВАДРАТ ФИКСИРОВАННОГО РАЗМЕРА */
-.admin-right-column {
-  transform: translateX(30px);
-  width: var(--panel-width);
-  height: var(--panel-height);
-  position: relative;
-}
-
-.admin-fixed-panel {
-  background-color: #2a2a2a;
-  border-radius: 10px;
-  border: 1px solid #444;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 0 15px var(--shadow-light);
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* Верхняя часть с информацией - фиксированная высота */
-.admin-info-section {
-  padding: 1.5rem 1.5rem 1rem 1.5rem;
-  border-bottom: 1px solid #444;
-  height: 280px; /* Фиксированная высота для верхней части */
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-info-title {
-  font-size: 1.3rem;
-  color: var(--accent-color);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #444;
-  text-shadow: 0 0 5px var(--shadow-light);
-  flex-shrink: 0;
-}
-
-.admin-info-content-fixed {
-  background-color: #222;
-  border-radius: 8px;
-  padding: 1rem;
-  flex: 1;
-  border: 1px solid #3a3a3a;
-  overflow-y: auto;
-  min-height: 0; /* Важно для Firefox */
-}
-
-/* Стили для скролла внутри информационного блока */
-.admin-info-content-fixed::-webkit-scrollbar {
-  width: 4px;
-}
-
-.admin-info-content-fixed::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-
-.admin-info-content-fixed::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 2px;
-}
-
-.admin-info-content-fixed::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color);
-}
-
-.admin-service-details,
-.admin-client-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-}
-
-.admin-info-icon {
-  font-size: 2rem;
-  text-align: center;
-  margin-bottom: 0.5rem;
-  color: var(--accent-color);
-}
-
-.admin-info-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.admin-label {
-  font-size: 0.75rem;
-  color: #aaa;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.admin-value {
-  font-size: 1rem;
-  color: var(--text-primary);
-  background-color: #1a1a1a;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  border-left: 3px solid var(--accent-color);
-  word-break: break-word;
-}
-
-.admin-price {
-  color: var(--accent-color);
-  font-weight: bold;
-}
-
-.admin-info-empty-fixed {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-style: italic;
-  text-align: center;
-}
-
-/* Нижняя часть со списком - фиксированная высота */
-.admin-list-section {
-  flex: 1;
-  padding: 1rem 1.5rem 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  height: calc(100% - 280px); /* Оставшееся место после верхней части */
-}
-
-.admin-list-title {
-  font-size: 1.1rem;
-  color: #aaa;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  flex-shrink: 0;
-}
-
-.admin-list-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-  min-height: 0; /* Важно для Firefox */
-}
-
-.admin-list-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.8rem;
-  background-color: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.admin-list-item:hover {
-  background-color: #252525;
-  border-color: var(--accent-color);
-  transform: translateX(5px);
-  box-shadow: 0 0 10px var(--shadow-light);
-}
-
-.admin-list-item.selected {
-  background-color: #2a2a2a;
-  border-color: var(--accent-color);
-  box-shadow: 0 0 15px var(--shadow-light);
-}
-
-.admin-item-icon {
-  font-size: 1.2rem;
-  min-width: 30px;
-  color: var(--accent-color);
-}
-
-.admin-item-name {
-  flex: 1;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.admin-item-price {
-  color: var(--accent-color);
-  font-weight: bold;
-  background-color: #333;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  white-space: nowrap;
-}
-
-.admin-item-car {
-  color: #aaa;
-  font-size: 0.9rem;
-  background-color: #333;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
+  --font-main: 'Montserrat', sans-serif; /* Взято из твоего CSS */
 }
 
 .admin-loading {
   text-align: center;
-  padding: 2rem;
-  color: #aaa;
+  padding: 4rem;
+  color: var(--text-secondary);
   font-size: 1.2rem;
 }
 
-/* Стили для скролла в списке */
-.admin-list-scroll::-webkit-scrollbar {
-  width: 6px;
+.admin-panel-fullscreen {
+  padding: 2rem;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-family: var(--font-main);
 }
 
-.admin-list-scroll::-webkit-scrollbar-track {
-  background: #1a1a1a;
-  border-radius: 3px;
+.admin-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+  flex-wrap: wrap; 
+  gap: 1rem;
 }
 
-.admin-list-scroll::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 3px;
+/* --- ИСПРАВЛЕНИЕ: Этот блок заставит вкладки быть в ряд --- */
+.admin-panel-tabs {
+  display: flex;
+  gap: 1rem;
 }
 
-.admin-list-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-color);
+.admin-panel-tabs .tab-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Адаптация для мобильных */
-@media (max-width: 900px) {
-  .admin-content {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-right-column {
-    transform: translateX(0);
-    width: 100%;
-    height: 600px;
-    margin-top: 1rem;
-  }
-  
-  .admin-fixed-panel {
-    position: relative;
-  }
+.admin-panel-tabs .tab-btn.active {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: var(--bg-dark);
+  box-shadow: 0 0 10px var(--shadow-light);
 }
+
+.admin-header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.add-item-btn, .admin-logout-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.add-item-btn {
+  background-color: var(--accent-color);
+  color: var(--bg-dark);
+}
+.add-item-btn:hover {
+  background-color: var(--accent-hover);
+}
+
+.admin-logout-btn {
+  background-color: #252525;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.admin-logout-btn:hover {
+    background-color: #333;
+}
+
+main .empty-state {
+  text-align: center;
+  margin-top: 5rem;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.item-card {
+  background-color: #1a1a1a;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease-in-out;
+}
+
+.item-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-color);
+  box-shadow: 0 5px 15px var(--shadow-light);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.card-header h3 {
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  margin-right: 1rem;
+}
+
+.item-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--accent-color);
+  white-space: nowrap;
+}
+
+.item-car {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.item-description {
+  flex-grow: 1;
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.item-phone {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: auto; /* Прижимает кнопки к низу */
+}
+
+.btn-icon {
+    background: #252525;
+    border: 1px solid #444;
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 8px var(--shadow-light);
+}
+
+.btn-icon.btn-danger:hover {
+    color: #ff4d4d;
+    border-color: #ff4d4d;
+}
+
+/* Стили для модального окна */
+.modal-backdrop { 
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-content {
+  background: #1e1e1e;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+.modal-content h2 { margin-bottom: 2rem; color: var(--accent-color); }
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem; }
+.form-group input, .form-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+.form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--shadow-light); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+
+.btn-primary { 
+    padding: 0.7rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background-color: var(--accent-color); 
+    color: var(--bg-dark); 
+}
+.btn-primary:hover { background-color: var(--accent-hover); }
+
+.btn-secondary {
+    padding: 0.7rem 1.4rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    background-color: #333; 
+    color: var(--text-primary); 
+}
+.btn-secondary:hover { background-color: #444; }
