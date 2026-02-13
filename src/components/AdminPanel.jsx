@@ -1,118 +1,116 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../styles/AdminPanel.css';
+
+// Create an axios instance for authenticated requests
+const api = axios.create({
+  baseURL: '/api',
+});
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const AdminPanel = () => {
   const [services, setServices] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [activeSection, setActiveSection] = useState('services');
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedInfo, setSelectedInfo] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
+  // Renamed to fetchServices for clarity
+  const fetchServices = useCallback(async () => {
+    try {
+      const response = await api.get('/products');
+      setServices(response.data);
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+      // Optional: Handle unauthorized access, e.g., redirect to login
+      if (error.response && error.response.status === 401) {
+        navigate('/login');
+      }
+    }
+  }, [navigate]);
+
   useEffect(() => {
-    const isAdmin = localStorage.getItem('myProject_isAdmin');
-    if (isAdmin !== 'true') {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
       navigate('/login');
       return;
     }
 
-    setTimeout(() => {
-      setServices([
-        {
-          id: 1,
-          name: 'Замена масла',
-          icon: '🔧',
-          description: 'Профессиональная замена масла и фильтров',
-          price: '2000₽'
-        },
-        {
-          id: 2,
-          name: 'Шиномонтаж',
-          icon: '🚗',
-          description: 'Балансировка и замена шин',
-          price: '2500₽'
-        },
-        {
-          id: 3,
-          name: 'Диагностика',
-          icon: '🔍',
-          description: 'Компьютерная диагностика автомобиля',
-          price: '1500₽'
-        }
-      ]);
-
-      setClients([
-        {
-          id: 1,
-          name: 'Иван Петров',
-          phone: '+7 (999) 123-45-67',
-          car: 'Toyota Camry',
-          email: 'ivan@example.com'
-        },
-        {
-          id: 2,
-          name: 'Мария Сидорова',
-          phone: '+7 (999) 765-43-21',
-          car: 'Hyundai Solaris',
-          email: 'maria@example.com'
-        },
-        {
-          id: 3,
-          name: 'Алексей Иванов',
-          phone: '+7 (999) 555-55-55',
-          car: 'Kia Rio',
-          email: 'alex@example.com'
-        }
-      ]);
-      
-      setIsLoading(false);
-    }, 500);
-  }, [navigate]);
-
-  const handleAddService = () => {
-    const newService = {
-      id: services.length > 0 ? Math.max(...services.map(s => s.id)) + 1 : 1,
-      name: 'Новая услуга',
-      icon: '➕',
-      description: 'Описание новой услуги',
-      price: '0₽'
-    };
-    setServices([...services, newService]);
-    setSelectedInfo(newService);
-  };
-
-  const handleRemoveService = (service) => {
-    if (!window.confirm(`Удалить услугу "${service.name}"?`)) return;
-    setServices(services.filter(s => s.id !== service.id));
-    if (selectedInfo && selectedInfo.id === service.id) {
-      setSelectedInfo(null);
-    }
-  };
-
-  const handleAddClient = () => {
-    const newClient = {
-      id: clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1,
-      name: 'Новый клиент',
-      phone: '+7 (___) ___-__-__',
-      car: 'Марка автомобиля',
-      email: 'email@example.com'
-    };
-    setClients([...clients, newClient]);
-    setSelectedInfo(newClient);
-  };
-
-  const handleRemoveClient = (client) => {
-    if (!window.confirm(`Удалить клиента "${client.name}"?`)) return;
-    setClients(clients.filter(c => c.id !== client.id));
-    if (selectedInfo && selectedInfo.id === client.id) {
-      setSelectedInfo(null);
-    }
-  };
+    setIsLoading(true);
+    fetchServices().finally(() => setIsLoading(false));
+  }, [navigate, fetchServices]);
 
   const handleLogout = () => {
-    localStorage.removeItem('myProject_isAdmin');
+    localStorage.removeItem('authToken');
     navigate('/');
+  };
+
+  const handleAddService = async () => {
+    const newServiceName = prompt("Введите название новой услуги:", "Новая услуга");
+    if (!newServiceName) return;
+
+    const newService = {
+      name: newServiceName,
+      description: 'Описание по умолчанию',
+      price: 0,
+    };
+
+    try {
+      const response = await api.post('/products', newService);
+      setServices([...services, response.data]); // Add new service to the list
+      setSelectedService(response.data); // Select the new service
+      setIsEditing(true); // Immediately open for editing
+    } catch (error) {
+      console.error("Failed to add service:", error);
+      alert('Не удалось добавить услугу.');
+    }
+  };
+
+  const handleRemoveService = async (service) => {
+    if (!service || !service.id) {
+        alert('Сначала выберите услугу для удаления.');
+        return;
+    }
+
+    if (!window.confirm(`Вы уверены, что хотите удалить "${service.name}"?`)) return;
+
+    try {
+      await api.delete(`/products/${service.id}`);
+      setServices(services.filter(s => s.id !== service.id));
+      setSelectedService(null);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to delete service:", error);
+      alert('Не удалось удалить услугу.');
+    }
+  };
+
+  const handleUpdateService = async (e) => {
+    e.preventDefault();
+    if (!selectedService) return;
+
+    try {
+      const response = await api.put(`/products/${selectedService.id}`, selectedService);
+      // Update the list with the new data
+      setServices(services.map(s => (s.id === selectedService.id ? response.data : s)));
+      setIsEditing(false); // Exit editing mode
+    } catch (error) {
+      console.error("Failed to update service:", error);
+      alert('Не удалось обновить услугу.');
+    }
+  };
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedService({ ...selectedService, [name]: value });
   };
 
   if (isLoading) return <div className="admin-loading">Загрузка...</div>;
@@ -120,155 +118,87 @@ const AdminPanel = () => {
   return (
     <div className="admin-container">
       <div className="admin-header">
-        <h1 className="admin-title">Админ-панель AvtoShop</h1>
-        <button onClick={handleLogout} className="admin-logout-btn">
-          Выйти
-        </button>
+        <h1 className="admin-title">Админ-панель</h1>
+        <button onClick={handleLogout} className="admin-logout-btn">Выйти</button>
       </div>
-
       <div className="admin-content">
-        {/* Левая колонка с кнопками */}
         <div className="admin-sidebar">
-          <button 
-            className={`admin-sidebar-btn ${activeSection === 'services' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveSection('services');
-              setSelectedInfo(null);
-            }}
-          >
-            <span className="admin-btn-icon"></span>
-            Услуги
-          </button>
-          
-          <button 
-            className="admin-sidebar-btn admin-add-btn"
-            onClick={activeSection === 'services' ? handleAddService : handleAddClient}
-          >
-            <span className="admin-btn-icon"></span>
-            {activeSection === 'services' ? 'Добавить услугу' : 'Добавить клиента'}
-          </button>
-          
-          <button 
-            className="admin-sidebar-btn admin-clients-btn"
-            onClick={() => {
-              setActiveSection('clients');
-              setSelectedInfo(null);
-            }}
-          >
-            <span className="admin-btn-icon"></span>
-            Клиенты
-          </button>
-          
-          <button 
-            className="admin-sidebar-btn admin-remove-btn"
-            onClick={() => {
-              if (activeSection === 'services' && selectedInfo) {
-                handleRemoveService(selectedInfo);
-              } else if (activeSection === 'clients' && selectedInfo) {
-                handleRemoveClient(selectedInfo);
-              } else {
-                alert('Сначала выберите элемент для удаления');
-              }
-            }}
-          >
-            <span className="admin-btn-icon"></span>
-            {activeSection === 'services' ? 'Убрать услугу' : 'Убрать клиента'}
-          </button>
+            <h3>Управление</h3>
+            <button className="admin-sidebar-btn admin-add-btn" onClick={handleAddService}>
+                Добавить услугу
+            </button>
+            <button className="admin-sidebar-btn admin-remove-btn" onClick={() => handleRemoveService(selectedService)}>
+                Удалить выбранное
+            </button>
         </div>
 
-        {/* Правая колонка с фиксированным положением */}
-        <div className="admin-right-column">
-          <div className="admin-fixed-panel">
-            {/* Верхняя часть с информацией */}
+        <div className="admin-main-content">
+            <div className="admin-list-section">
+              <h3 className="admin-list-title">Список услуг</h3>
+              <div className="admin-list-scroll">
+                {services.map(service => (
+                  <div 
+                    key={service.id}
+                    className={`admin-list-item ${selectedService?.id === service.id ? 'selected' : ''}`}
+                    onClick={() => {
+                        setSelectedService(service)
+                        setIsEditing(false); // Reset editing state on new selection
+                    }}
+                  >
+                    <span className="admin-item-name">{service.name}</span>
+                    <span className="admin-item-price">{service.price} ₽</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="admin-info-section">
-              <h2 className="admin-info-title">
-                {activeSection === 'services' ? 'Информация об услуге' : 'Информация о клиенте'}
-              </h2>
-              
-              <div className="admin-info-content-fixed">
-                {selectedInfo ? (
-                  activeSection === 'services' ? (
-                    <div className="admin-service-details">
-                      <div className="admin-info-icon">{selectedInfo.icon}</div>
+                <h2 className="admin-info-title">Информация об услуге</h2>
+                <div className="admin-info-content">
+                {selectedService ? (
+                  isEditing ? (
+                    <form onSubmit={handleUpdateService} className="admin-edit-form">
                       <div className="admin-info-row">
-                        <span className="admin-label">Название:</span>
-                        <span className="admin-value">{selectedInfo.name}</span>
+                          <label className="admin-label">Название:</label>
+                          <input type="text" name="name" value={selectedService.name} onChange={handleInputChange} className="admin-input"/>
                       </div>
                       <div className="admin-info-row">
-                        <span className="admin-label">Описание:</span>
-                        <span className="admin-value">{selectedInfo.description}</span>
+                          <label className="admin-label">Описание:</label>
+                          <textarea name="description" value={selectedService.description || ''} onChange={handleInputChange} className="admin-textarea"></textarea>
                       </div>
                       <div className="admin-info-row">
-                        <span className="admin-label">Цена:</span>
-                        <span className="admin-value admin-price">{selectedInfo.price}</span>
+                          <label className="admin-label">Цена:</label>
+                          <input type="number" name="price" value={selectedService.price} onChange={handleInputChange} className="admin-input"/>
                       </div>
-                    </div>
+                      <div className="admin-form-buttons">
+                        <button type="submit" className="admin-btn-save">Сохранить</button>
+                        <button type="button" className="admin-btn-cancel" onClick={() => setIsEditing(false)}>Отмена</button>
+                      </div>
+                    </form>
                   ) : (
-                    <div className="admin-client-details">
-                      <div className="admin-info-row">
-                        <span className="admin-label">Имя:</span>
-                        <span className="admin-value">{selectedInfo.name}</span>
-                      </div>
-                      <div className="admin-info-row">
-                        <span className="admin-label">Телефон:</span>
-                        <span className="admin-value">{selectedInfo.phone}</span>
-                      </div>
-                      <div className="admin-info-row">
-                        <span className="admin-label">Автомобиль:</span>
-                        <span className="admin-value">{selectedInfo.car}</span>
-                      </div>
-                      <div className="admin-info-row">
-                        <span className="admin-label">Email:</span>
-                        <span className="admin-value">{selectedInfo.email}</span>
-                      </div>
+                    <div className="admin-service-details">
+                       <div className="admin-info-row">
+                          <span className="admin-label">Название:</span>
+                          <span className="admin-value">{selectedService.name}</span>
+                        </div>
+                        <div className="admin-info-row">
+                          <span className="admin-label">Описание:</span>
+                          <span className="admin-value">{selectedService.description || '---'}</span>
+                        </div>
+                        <div className="admin-info-row">
+                          <span className="admin-label">Цена:</span>
+                          <span className="admin-value admin-price">{selectedService.price} ₽</span>
+                        </div>
+                        <button className="admin-btn-edit" onClick={() => setIsEditing(true)}>Редактировать</button>
                     </div>
                   )
                 ) : (
-                  <div className="admin-info-empty-fixed">
-                    {activeSection === 'services' 
-                      ? 'Выберите услугу из списка'
-                      : 'Выберите клиента из списка'
-                    }
+                  <div className="admin-info-empty">
+                    Выберите услугу из списка, чтобы посмотреть детали или добавить новую.
                   </div>
                 )}
-              </div>
+                </div>
             </div>
-
-            {/* Нижняя часть со списком */}
-            <div className="admin-list-section">
-              <h3 className="admin-list-title">
-                {activeSection === 'services' ? 'Список услуг' : 'Список клиентов'}
-              </h3>
-              
-              <div className="admin-list-scroll">
-                {activeSection === 'services' ? (
-                  services.map(service => (
-                    <div 
-                      key={service.id}
-                      className={`admin-list-item ${selectedInfo?.id === service.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedInfo(service)}
-                    >
-                      <span className="admin-item-icon">{service.icon}</span>
-                      <span className="admin-item-name">{service.name}</span>
-                      <span className="admin-item-price">{service.price}</span>
-                    </div>
-                  ))
-                ) : (
-                  clients.map(client => (
-                    <div 
-                      key={client.id}
-                      className={`admin-list-item ${selectedInfo?.id === client.id ? 'selected' : ''}`}
-                      onClick={() => setSelectedInfo(client)}
-                    >
-                      <span className="admin-item-icon">👤</span>
-                      <span className="admin-item-name">{client.name}</span>
-                      <span className="admin-item-car">{client.car}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
