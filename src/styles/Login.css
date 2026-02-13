@@ -9,7 +9,7 @@
 
 /* Основной контейнер формы */
 .login-form {
-  background: #fff;
+  background: #373737;
   padding: 40px;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -22,45 +22,50 @@
 /* Заголовок формы */
 .login-title {
   margin-bottom: 30px;
-  color: #2c3e50;
+  color: #ffffff;
   font-size: 24px;
   font-weight: 600;
 }
 
 /* Стиль для каждой группы ввода */
 .login-input-group {
-  position: relative;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
+  text-align: left; /* Выравнивание текста влево */
 }
 
-/* Основной стиль для input-полей */
+/* Стиль для лейблов - теперь над полями слева */
+.login-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #FF5733;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* Основной стиль для input-полей - черный прямоугольник */
 .login-input {
   width: 100%;
-  padding: 20px 10px 5px 0;
-  border: none;
-  border-bottom: 2px solid #ddd;
+  padding: 16px 15px;
+  border: 2px solid #555;
+  border-radius: 8px;
   font-size: 16px;
-  background: transparent;
+  background-color: #000000;
   transition: all 0.3s ease;
   outline: none;
+  color: #ffffff;
+  box-sizing: border-box;
 }
 
-/* Лейблы для input-полей (теперь всегда фиксированы и маленькие) */
-.login-label {
-  position: absolute;
-  top: -12px;
-  left: 0;
-  color: #FF5733;
-  font-size: 12px;
-  pointer-events: none;
-  transition: all 0.3s ease;
+/* Стиль для placeholder */
+.login-input::placeholder {
+  color: #888;
 }
 
-/* Убираем фокусную анимацию */
-.login-input-group.focused .login-label {
-  top: -12px;
-  font-size: 12px;
-  color: #FF5733;
+/* Стиль для input в фокусе */
+.login-input:focus {
+  border-color: #FF5733;
+  box-shadow: 0 0 10px rgba(255, 87, 51, 0.3);
 }
 
 /* Стиль для ошибки */
@@ -74,10 +79,16 @@
   text-align: center;
 }
 
-/* Стиль для кнопки */
+/* Контейнер для кнопки - для центрирования */
+.login-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+/* Стиль для кнопки - уменьшенная по бокам */
 .login-button {
-  width: 100%;
-  padding: 14px;
+  padding: 14px 40px;
   background: linear-gradient(90deg, #FF5733, #FF8C42);
   color: white;
   border: none;
@@ -87,6 +98,9 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(255, 87, 51, 0.3);
+  min-width: 150px;
+  width: auto;
+  display: inline-block;
 }
 
 .login-button:hover {

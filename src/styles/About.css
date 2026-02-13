@@ -7,21 +7,29 @@
 
 .about__container {
   max-width: 900px;
-  margin: 0 auto;
-  text-align: center;
+  margin: 0 auto; /* Это центрирует сам контейнер по горизонтали */
+  text-align: center; /* Это центрирует весь текст внутри контейнера */
 }
 
 .about__title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
   font-size: 2.5rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center; /* Явное центрирование заголовка */
   margin-bottom: 32px;
   color: #FF5733;
   text-shadow: 0 0 10px rgba(255, 87, 51, 0.5);
-  font-weight: 700;
 }
 
 .about__text {
-  font-size: 1.1rem;
-  line-height: 1.7;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center; /* Центрирование текста */
   color: #ccc;
   margin-bottom: 24px;
   opacity: 0;

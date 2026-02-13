@@ -56,7 +56,7 @@ const Testimonials = () => {
         </div>
 
         <button className="testimonial__toggle-btn" onClick={() => setFormVisible((v) => !v)}>
-          {formVisible ? 'Скрыть форму' : 'Оставить отзыв'}
+          {formVisible ? 'Скрыть форму' : 'Раскрыть форму'}
         </button>
 
         {formVisible && (

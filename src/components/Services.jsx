@@ -1,45 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/Services.css';
-import wrenchIcon from '../assets/wrenchs_4273441.png'; 
 
 const Services = () => {
-  const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  
+  const services = [
+    {
+      id: 1,
+      name: 'Техническое обслуживание',
+      description: 'Компьютерная диагностика двигателя, ходовой части, электрики',
+      price: 'от 500 ₽'
+    },
+    {
+      id: 2,
+      name: 'Диагностика',
+      description: 'Замена амортизаторов, сайлентблоков, шаровых опор, ступиц',
+      price: 'от 1000 ₽'
+    },
+    {
+      id: 3,
+      name: 'Чип-тюнинг',
+      description: 'Замена масла в двигателе и фильтров, трансмиссионное масло',
+      price: 'от 500 ₽'
+    },
+    {
+      id: 4,
+      name: 'Замена масла',
+      description: 'Механика и автомат, замена сцепления, ремонт коробки передач',
+      price: 'от 2000 ₽'
+    }
+  ];
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/posts');
-        
-        if (!response.ok) {
-          throw new Error('Ошибка загрузки услуг');
-        }
-
-        const data = await response.json();
-        setServices(data);
-        setIsLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setIsLoading(false);
-      }
-    };
-
-    fetchServices();
-  }, []);
-
-  const handleClick = (service) => {
+  const handleCardClick = (service) => {
     setSelectedService(service === selectedService ? null : service);
   };
 
-  if (isLoading) {
-    return <div className="loading">Загрузка услуг...</div>;
-  }
-
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
+  const handleBooking = (e, serviceName) => {
+    e.stopPropagation();
+    alert(`Запись на услугу: ${serviceName}`);
+  };
 
   return (
     <section className="services" id="services">
@@ -49,20 +48,24 @@ const Services = () => {
           {services.map((service) => (
             <div
               key={service.id}
-              className={`service__card ${selectedService === service ? 'expanded' : ''}`}
-              onClick={() => handleClick(service)}
+              className="service__card"
+              onClick={() => handleCardClick(service)}
             >
-              <div className="service__icon">
-                <img src={wrenchIcon} alt={service.name} />
-              </div>
               <h3 className="service__name">{service.name}</h3>
-
+              
               {selectedService === service && (
                 <div className="service__details">
                   <p><strong>Описание:</strong> {service.description}</p>
                   <p><strong>Цена:</strong> {service.price}</p>
                 </div>
               )}
+              
+              <button 
+                className="service__btn"
+                onClick={(e) => handleBooking(e, service.name)}
+              >
+                Записаться
+              </button>
             </div>
           ))}
         </div>

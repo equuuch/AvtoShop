@@ -4,143 +4,270 @@ import '../styles/AdminPanel.css';
 
 const AdminPanel = () => {
   const [services, setServices] = useState([]);
-  const [newService, setNewService] = useState({ name: '', icon: '', description: '', price: '' });
-  const [editingId, setEditingId] = useState(null);
-  const [selectedService, setSelectedService] = useState(null);
+  const [clients, setClients] = useState([]);
+  const [activeSection, setActiveSection] = useState('services');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [selectedInfo, setSelectedInfo] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('myProject_isAdmin');
     if (isAdmin !== 'true') {
       navigate('/login');
-    } else {
-      fetchServices();
+      return;
     }
-  }, []);
 
-  const fetchServices = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/posts');
-      if (!response.ok) throw new Error('Ошибка загрузки услуг');
-      const data = await response.json();
-      setServices(data);
+    setTimeout(() => {
+      setServices([
+        {
+          id: 1,
+          name: 'Замена масла',
+          icon: '🔧',
+          description: 'Профессиональная замена масла и фильтров',
+          price: '2000₽'
+        },
+        {
+          id: 2,
+          name: 'Шиномонтаж',
+          icon: '🚗',
+          description: 'Балансировка и замена шин',
+          price: '2500₽'
+        },
+        {
+          id: 3,
+          name: 'Диагностика',
+          icon: '🔍',
+          description: 'Компьютерная диагностика автомобиля',
+          price: '1500₽'
+        }
+      ]);
+
+      setClients([
+        {
+          id: 1,
+          name: 'Иван Петров',
+          phone: '+7 (999) 123-45-67',
+          car: 'Toyota Camry',
+          email: 'ivan@example.com'
+        },
+        {
+          id: 2,
+          name: 'Мария Сидорова',
+          phone: '+7 (999) 765-43-21',
+          car: 'Hyundai Solaris',
+          email: 'maria@example.com'
+        },
+        {
+          id: 3,
+          name: 'Алексей Иванов',
+          phone: '+7 (999) 555-55-55',
+          car: 'Kia Rio',
+          email: 'alex@example.com'
+        }
+      ]);
+      
       setIsLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setIsLoading(false);
+    }, 500);
+  }, [navigate]);
+
+  const handleAddService = () => {
+    const newService = {
+      id: services.length > 0 ? Math.max(...services.map(s => s.id)) + 1 : 1,
+      name: 'Новая услуга',
+      icon: '➕',
+      description: 'Описание новой услуги',
+      price: '0₽'
+    };
+    setServices([...services, newService]);
+    setSelectedInfo(newService);
+  };
+
+  const handleRemoveService = (service) => {
+    if (!window.confirm(`Удалить услугу "${service.name}"?`)) return;
+    setServices(services.filter(s => s.id !== service.id));
+    if (selectedInfo && selectedInfo.id === service.id) {
+      setSelectedInfo(null);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewService(prev => ({ ...prev, [name]: value }));
+  const handleAddClient = () => {
+    const newClient = {
+      id: clients.length > 0 ? Math.max(...clients.map(c => c.id)) + 1 : 1,
+      name: 'Новый клиент',
+      phone: '+7 (___) ___-__-__',
+      car: 'Марка автомобиля',
+      email: 'email@example.com'
+    };
+    setClients([...clients, newClient]);
+    setSelectedInfo(newClient);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const url = editingId 
-        ? `http://localhost:5000/api/post/${editingId}`
-        : 'http://localhost:5000/api/posts';
-      const method = editingId ? 'PUT' : 'POST';
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newService),
-      });
-      if (!response.ok) throw new Error(editingId ? 'Ошибка обновления' : 'Ошибка добавления');
-      const data = await response.json();
-      if (editingId) {
-        setServices(services.map(s => s.id === editingId ? data : s));
-      } else {
-        setServices([...services, data]);
-      }
-      setNewService({ name: '', icon: '', description: '', price: '' });
-      setEditingId(null);
-    } catch (err) {
-      setError(err.message);
+  const handleRemoveClient = (client) => {
+    if (!window.confirm(`Удалить клиента "${client.name}"?`)) return;
+    setClients(clients.filter(c => c.id !== client.id));
+    if (selectedInfo && selectedInfo.id === client.id) {
+      setSelectedInfo(null);
     }
-  };
-
-  const handleEdit = (service) => {
-    setNewService({
-      name: service.name,
-      icon: service.icon,
-      description: service.description,
-      price: service.price
-    });
-    setEditingId(service.id);
-    setSelectedService(null);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Вы уверены, что хотите удалить эту услугу?')) return;
-    try {
-      const response = await fetch(`http://localhost:5000/api/post/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Ошибка удаления услуги');
-      setServices(services.filter(service => service.id !== id));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setNewService({ name: '', icon: '', description: '', price: '' });
-    setEditingId(null);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('myProject_isAdmin');
-    navigate('/login');
+    navigate('/');
   };
 
-  if (isLoading) return <div className="admin-loading">Загрузка услуг...</div>;
-  if (error) return <div className="admin-error">{error}</div>;
+  if (isLoading) return <div className="admin-loading">Загрузка...</div>;
 
   return (
     <div className="admin-container">
       <div className="admin-header">
         <h1 className="admin-title">Админ-панель AvtoShop</h1>
-        <button onClick={handleLogout} className="admin-logout-btn">Выйти</button>
+        <button onClick={handleLogout} className="admin-logout-btn">
+          Выйти
+        </button>
       </div>
 
       <div className="admin-content">
-        <div className="admin-form-section">
-          <h2 className="admin-section-title">
-            {editingId ? 'Редактировать услугу' : 'Добавить новую услугу'}
-          </h2>
-          <form onSubmit={handleSubmit} className="admin-form">
-            <input type="text" name="name" value={newService.name} onChange={handleInputChange} placeholder="Название услуги" className="admin-input" required />
-            <input type="text" name="icon" value={newService.icon} onChange={handleInputChange} placeholder="Иконка" className="admin-input" required />
-            <textarea name="description" value={newService.description} onChange={handleInputChange} placeholder="Описание" className="admin-textarea" required />
-            <input type="text" name="price" value={newService.price} onChange={handleInputChange} placeholder="Цена" className="admin-input" required />
-            <button type="submit" className="admin-submit-btn">{editingId ? 'Обновить' : 'Добавить'}</button>
-            {editingId && <button type="button" onClick={handleCancelEdit} className="admin-cancel-btn">Отмена</button>}
-          </form>
+        {/* Левая колонка с кнопками */}
+        <div className="admin-sidebar">
+          <button 
+            className={`admin-sidebar-btn ${activeSection === 'services' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSection('services');
+              setSelectedInfo(null);
+            }}
+          >
+            <span className="admin-btn-icon"></span>
+            Услуги
+          </button>
+          
+          <button 
+            className="admin-sidebar-btn admin-add-btn"
+            onClick={activeSection === 'services' ? handleAddService : handleAddClient}
+          >
+            <span className="admin-btn-icon"></span>
+            {activeSection === 'services' ? 'Добавить услугу' : 'Добавить клиента'}
+          </button>
+          
+          <button 
+            className="admin-sidebar-btn admin-clients-btn"
+            onClick={() => {
+              setActiveSection('clients');
+              setSelectedInfo(null);
+            }}
+          >
+            <span className="admin-btn-icon"></span>
+            Клиенты
+          </button>
+          
+          <button 
+            className="admin-sidebar-btn admin-remove-btn"
+            onClick={() => {
+              if (activeSection === 'services' && selectedInfo) {
+                handleRemoveService(selectedInfo);
+              } else if (activeSection === 'clients' && selectedInfo) {
+                handleRemoveClient(selectedInfo);
+              } else {
+                alert('Сначала выберите элемент для удаления');
+              }
+            }}
+          >
+            <span className="admin-btn-icon"></span>
+            {activeSection === 'services' ? 'Убрать услугу' : 'Убрать клиента'}
+          </button>
         </div>
 
-        <div className="admin-services-section">
-          <h2 className="admin-section-title">Список услуг</h2>
-          <div className="admin-services-grid">
-            {services.map((service) => (
-              <div key={service.id} className={`admin-service-card ${selectedService === service ? 'active' : ''}`} onClick={() => setSelectedService(service === selectedService ? null : service)}>
-                <div className="admin-service-header">
-                  <h3 className="admin-service-name">{service.name}</h3>
-                  <span className="admin-service-price">{service.price}</span>
-                </div>
-                {selectedService === service && (
-                  <div className="admin-service-actions">
-                    <button className="admin-edit-btn" onClick={(e) => { e.stopPropagation(); handleEdit(service); }}>Редактировать</button>
-                    <button className="admin-delete-btn" onClick={(e) => { e.stopPropagation(); handleDelete(service.id); }}>Удалить</button>
+        {/* Правая колонка с фиксированным положением */}
+        <div className="admin-right-column">
+          <div className="admin-fixed-panel">
+            {/* Верхняя часть с информацией */}
+            <div className="admin-info-section">
+              <h2 className="admin-info-title">
+                {activeSection === 'services' ? 'Информация об услуге' : 'Информация о клиенте'}
+              </h2>
+              
+              <div className="admin-info-content-fixed">
+                {selectedInfo ? (
+                  activeSection === 'services' ? (
+                    <div className="admin-service-details">
+                      <div className="admin-info-icon">{selectedInfo.icon}</div>
+                      <div className="admin-info-row">
+                        <span className="admin-label">Название:</span>
+                        <span className="admin-value">{selectedInfo.name}</span>
+                      </div>
+                      <div className="admin-info-row">
+                        <span className="admin-label">Описание:</span>
+                        <span className="admin-value">{selectedInfo.description}</span>
+                      </div>
+                      <div className="admin-info-row">
+                        <span className="admin-label">Цена:</span>
+                        <span className="admin-value admin-price">{selectedInfo.price}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="admin-client-details">
+                      <div className="admin-info-row">
+                        <span className="admin-label">Имя:</span>
+                        <span className="admin-value">{selectedInfo.name}</span>
+                      </div>
+                      <div className="admin-info-row">
+                        <span className="admin-label">Телефон:</span>
+                        <span className="admin-value">{selectedInfo.phone}</span>
+                      </div>
+                      <div className="admin-info-row">
+                        <span className="admin-label">Автомобиль:</span>
+                        <span className="admin-value">{selectedInfo.car}</span>
+                      </div>
+                      <div className="admin-info-row">
+                        <span className="admin-label">Email:</span>
+                        <span className="admin-value">{selectedInfo.email}</span>
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  <div className="admin-info-empty-fixed">
+                    {activeSection === 'services' 
+                      ? 'Выберите услугу из списка'
+                      : 'Выберите клиента из списка'
+                    }
                   </div>
                 )}
               </div>
-            ))}
+            </div>
+
+            {/* Нижняя часть со списком */}
+            <div className="admin-list-section">
+              <h3 className="admin-list-title">
+                {activeSection === 'services' ? 'Список услуг' : 'Список клиентов'}
+              </h3>
+              
+              <div className="admin-list-scroll">
+                {activeSection === 'services' ? (
+                  services.map(service => (
+                    <div 
+                      key={service.id}
+                      className={`admin-list-item ${selectedInfo?.id === service.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedInfo(service)}
+                    >
+                      <span className="admin-item-icon">{service.icon}</span>
+                      <span className="admin-item-name">{service.name}</span>
+                      <span className="admin-item-price">{service.price}</span>
+                    </div>
+                  ))
+                ) : (
+                  clients.map(client => (
+                    <div 
+                      key={client.id}
+                      className={`admin-list-item ${selectedInfo?.id === client.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedInfo(client)}
+                    >
+                      <span className="admin-item-icon">👤</span>
+                      <span className="admin-item-name">{client.name}</span>
+                      <span className="admin-item-car">{client.car}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

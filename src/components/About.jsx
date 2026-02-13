@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import '../styles/About.css';
 
 const About = () => {
+  // Функция для добавления класса для анимации при скроллинге
   useEffect(() => {
     const elements = document.querySelectorAll('.about__text');
 
@@ -15,7 +16,7 @@ const About = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); 
+    handleScroll(); // Для сразу анимации элементов, которые уже в области видимости
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -30,13 +31,8 @@ const About = () => {
         </h2>
 
         <p className="about__text">
-          Автосервис <strong>AVTOSHOP</strong> — это команда профессионалов с более чем 10-летним опытом работы.
+          Автосервис AVTOSHOP — это команда профессионалов с более чем 10-летним опытом работы.
           Мы специализируемся на ремонте и обслуживании автомобилей любой сложности. Используем только проверенные материалы и современное оборудование.
-        </p>
-
-        <p className="about__text">
-          Нам важно не просто починить автомобиль, а дать вам уверенность на дороге.
-          Мы ценим ваше время и предлагаем индивидуальный подход, честные цены и прозрачную работу.
         </p>
       </div>
     </section>
