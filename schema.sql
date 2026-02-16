@@ -27,3 +27,11 @@ VALUES
   ('Чип-тюнинг', 'Замена масла в двигателе и фильтров, трансмиссионное масло', 500),
   ('Замена масла', 'Механика и автомат, замена сцепления, ремонт коробки передач', 2000)
 ON CONFLICT (name) DO NOTHING;
+
+CREATE TABLE reviews (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    text TEXT NOT NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import Services from './components/Services';
@@ -11,7 +11,9 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import AdminPanel from './components/AdminPanel';
 import ProtectedRoute from './components/ProtectedRoute';
+import AllReviews from './components/AllReviews';
 import './App.css';
+import './styles/global.css';
 
 function App() {
   return (
@@ -30,6 +32,7 @@ function App() {
             </>
           } />
           <Route path="/login" element={<Login />} />
+          <Route path="/reviews" element={<AllReviews />} />
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminPanel />

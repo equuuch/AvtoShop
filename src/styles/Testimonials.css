@@ -1,9 +1,9 @@
 .testimonials {
-  background: linear-gradient(135deg, #2f2f2f, #111); /* Градиентный фон */
+  background: linear-gradient(135deg, #2f2f2f, #111);
   color: #fff;
   padding: 80px 24px;
   font-family: 'Montserrat', sans-serif;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); /* Легкая тень */
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 .testimonials__container {
@@ -15,7 +15,7 @@
 .testimonials__title {
   font-size: 2.8rem;
   margin-bottom: 48px;
-  color: #FF5733; /* Оранжевый акцент */
+  color: #FF5733;
   text-shadow: 0 0 12px rgba(255, 87, 51, 0.6);
   font-weight: 700;
 }
@@ -37,7 +37,7 @@
 
 .testimonial__card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 0 20px rgba(255, 87, 51, 0.4); 
+  box-shadow: 0 0 20px rgba(255, 87, 51, 0.4);
 }
 
 .testimonial__header {
@@ -50,12 +50,7 @@
 .testimonial__name {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #edefef; 
-}
-
-.testimonial__date {
-  font-size: 0.9rem;
-  color: #aaa;
+  color: #edefef;
 }
 
 .testimonial__text {
@@ -67,7 +62,7 @@
 
 .testimonial__rating {
   font-size: 1.2rem;
-  color: #FFD700; /* Золотой для звезд рейтинга */
+  color: #FFD700;
 }
 
 .testimonial__form {
@@ -80,12 +75,15 @@
   margin-left: auto;
   margin-right: auto;
   text-align: left;
+  display: flex;
+  flex-direction: column;
 }
 
 .testimonial__form h3 {
   font-size: 1.5rem;
   margin-bottom: 16px;
   color: #FF5733;
+  text-align: center;
 }
 
 .testimonial__form input,
@@ -98,25 +96,68 @@
   background-color: #111;
   color: #fff;
   font-size: 1rem;
-  resize: vertical;
+  box-sizing: border-box;
 }
+
+.form-group-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.form-group-rating label {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 10px;
+}
+
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* Reverse the order of elements */
+  justify-content: center;
+}
+
+.star-rating input[type="radio"] {
+  display: none; /* Hide the actual radio buttons */
+}
+
+.star-rating label {
+  font-size: 2.5rem;
+  color: #444; /* Default color for empty star */
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+  padding: 0 5px;
+}
+
+/* When a label is hovered, color it and all previous labels */
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: #ffc107; /* Hover color */
+}
+
+/* When a radio button is checked, color its label and all previous labels */
+.star-rating input[type="radio"]:checked ~ label {
+  color: #FFD700; /* Selected color */
+}
+
 
 .testimonial__form button {
   background-color: #FF5733;
   color: #fff;
-  padding: 10px 20px;
+  padding: 12px 20px;
   border: none;
   border-radius: 4px;
   font-size: 1.1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  align-self: center;
 }
 
 .testimonial__form button:hover {
   background-color: #e64a19;
 }
 
-/* Кнопка "Оставить отзыв" */
 .testimonial__toggle-btn {
   margin-top: 40px;
   background-color: transparent;
@@ -134,7 +175,6 @@
   color: #fff;
 }
 
-/* Анимация появления */
 .testimonial__form.animated {
   animation: fadeIn 0.4s ease-in-out;
 }
@@ -144,9 +184,77 @@
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* --- Styles for AllReviews Component --- */
+
+.all-reviews-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(135deg, #2f2f2f, #111);
+  color: #fff;
+  border-radius: 16px;
+}
+
+.all-reviews-title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #FF5733;
+}
+
+.reviews-list {
+  display: grid;
+  gap: 20px;
+}
+
+.review-card {
+  background-color: #292929;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.review-author {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #edefef;
+}
+
+.review-rating {
+  font-size: 1.2rem;
+  color: #f39c12;
+}
+
+.review-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  color: #eee;
+}
+
+.review-date {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  text-align: right;
+}
+
+.error-message {
+    color: #e74c3c;
+    text-align: center;
 }

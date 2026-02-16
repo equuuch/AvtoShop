@@ -101,3 +101,9 @@
   text-shadow: 0 2px 10px rgba(255, 87, 51, 0.3);
   line-height: 1.4; /* Добавьте это для управления межстрочным интервалом */
 }
+
+@media (max-width: 768px) {
+  .hero__image {
+    display: none;
+  }
+}
