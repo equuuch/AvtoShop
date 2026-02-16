@@ -134,6 +134,65 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// --- CLIENTS API ROUTES ---
+
+app.get('/api/clients', authenticateToken, async (req, res) => {
+    try {
+        const { rows } = await db.query('SELECT * FROM clients ORDER BY id ASC');
+        res.json(rows);
+    } catch (err) {
+        console.error('Error fetching clients:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/clients', authenticateToken, async (req, res) => {
+    const { name, phone, car } = req.body;
+    try {
+        const { rows } = await db.query(
+            'INSERT INTO clients (name, phone, car) VALUES ($1, $2, $3) RETURNING *',
+            [name, phone, car]
+        );
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        console.error('Error creating client:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.put('/api/clients/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    const { name, phone, car } = req.body;
+    try {
+        const { rows } = await db.query(
+            'UPDATE clients SET name = $1, phone = $2, car = $3 WHERE id = $4 RETURNING *',
+            [name, phone, car, id]
+        );
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Client not found' });
+        }
+        res.json(rows[0]);
+    } catch (err) {
+        console.error('Error updating client:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.delete('/api/clients/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await db.query('DELETE FROM clients WHERE id = $1 RETURNING *', [id]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Client not found' });
+        }
+        res.status(200).json({ message: 'Client deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting client:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 // --- REVIEWS API ROUTES ---
 
 // Get all reviews (Public)
@@ -168,6 +227,39 @@ app.post('/api/reviews', async (req, res) => {
   }
 });
 
+// Update a review (Admin)
+app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { name, text, rating } = req.body;
+  try {
+    const { rows } = await db.query(
+      'UPDATE reviews SET name = $1, text = $2, rating = $3 WHERE id = $4 RETURNING *',
+      [name, text, rating, id]
+    );
+    if (rows.length === 0) {
+        return res.status(404).json({ error: 'Review not found' });
+    }
+    res.json(rows[0]);
+  } catch (err) {
+    console.error('Error updating review:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Delete a review (Admin)
+app.delete('/api/reviews/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Review not found' });
+    }
+    res.status(200).json({ message: 'Review deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting review:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
