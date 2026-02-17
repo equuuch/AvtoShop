@@ -3,6 +3,8 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
+const { validationResult } = require('express-validator');
+const { validateProduct, validateClient, validateReview } = require('./validators');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -11,6 +13,15 @@ const JWT_SECRET = 'your_super_secret_key_change_this';
 
 app.use(cors());
 app.use(express.json());
+
+const handleValidationErrors = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+};
+
 
 // --- AUTHENTICATION ROUTES ---
 
@@ -88,7 +99,7 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-app.post('/api/products', authenticateToken, async (req, res) => {
+app.post('/api/products', authenticateToken, validateProduct, handleValidationErrors, async (req, res) => {
   const { name, description, price } = req.body;
   try {
     const { rows } = await db.query(
@@ -102,7 +113,7 @@ app.post('/api/products', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/products/:id', authenticateToken, async (req, res) => {
+app.put('/api/products/:id', authenticateToken, validateProduct, handleValidationErrors, async (req, res) => {
   const { id } = req.params;
   const { name, description, price } = req.body;
   try {
@@ -146,7 +157,7 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/clients', authenticateToken, async (req, res) => {
+app.post('/api/clients', authenticateToken, validateClient, handleValidationErrors, async (req, res) => {
     const { name, phone, car } = req.body;
     try {
         const { rows } = await db.query(
@@ -160,7 +171,7 @@ app.post('/api/clients', authenticateToken, async (req, res) => {
     }
 });
 
-app.put('/api/clients/:id', authenticateToken, async (req, res) => {
+app.put('/api/clients/:id', authenticateToken, validateClient, handleValidationErrors, async (req, res) => {
     const { id } = req.params;
     const { name, phone, car } = req.body;
     try {
@@ -195,7 +206,6 @@ app.delete('/api/clients/:id', authenticateToken, async (req, res) => {
 
 // --- REVIEWS API ROUTES ---
 
-// Get all reviews (Public)
 app.get('/api/reviews', async (req, res) => {
   try {
     const { rows } = await db.query('SELECT * FROM reviews ORDER BY created_at DESC');
@@ -206,15 +216,8 @@ app.get('/api/reviews', async (req, res) => {
   }
 });
 
-// Create a review (Public)
-app.post('/api/reviews', async (req, res) => {
+app.post('/api/reviews', validateReview, handleValidationErrors, async (req, res) => {
   const { name, text, rating } = req.body;
-  if (!name || !text || !rating) {
-    return res.status(400).json({ error: 'Name, text, and rating are required' });
-  }
-  if (rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
-  }
   try {
     const { rows } = await db.query(
       'INSERT INTO reviews (name, text, rating) VALUES ($1, $2, $3) RETURNING *',
@@ -227,8 +230,7 @@ app.post('/api/reviews', async (req, res) => {
   }
 });
 
-// Update a review (Admin)
-app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
+app.put('/api/reviews/:id', authenticateToken, validateReview, handleValidationErrors, async (req, res) => {
   const { id } = req.params;
   const { name, text, rating } = req.body;
   try {
@@ -246,7 +248,6 @@ app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete a review (Admin)
 app.delete('/api/reviews/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
