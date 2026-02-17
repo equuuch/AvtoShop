@@ -8,7 +8,7 @@
   --text-secondary: #ccc;
   --border-color: #333;
   --shadow-light: rgba(255, 87, 51, 0.1);
-  --font-main: 'Montserrat', sans-serif; /* Взято из твоего CSS */
+  --font-main: 'Montserrat', sans-serif;
 }
 
 .admin-loading {
@@ -16,6 +16,7 @@
   padding: 4rem;
   color: var(--text-secondary);
   font-size: 1.2rem;
+  font-family: var(--font-main);
 }
 
 .admin-panel-fullscreen {
@@ -30,20 +31,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem; /* Уменьшен отступ */
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 1.5rem;
   flex-wrap: wrap; 
   gap: 1rem;
 }
 
-/* --- ИСПРАВЛЕНИЕ: Этот блок заставит вкладки быть в ряд --- */
 .admin-panel-tabs {
   display: flex;
   gap: 1rem;
 }
 
 .admin-panel-tabs .tab-btn {
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   padding: 0.8rem 1.5rem;
@@ -70,6 +71,7 @@
 }
 
 .add-item-btn, .admin-logout-btn {
+  font-family: var(--font-main);
   display: flex;
   align-items: center;
   padding: 0.8rem 1.5rem;
@@ -98,11 +100,19 @@
     background-color: #333;
 }
 
+/* Под-заголовок для поиска */
+.admin-panel-subheader {
+    padding: 1rem 0;
+    margin-bottom: 2rem; /* Отступ под поиском */
+}
+
+
 main .empty-state {
   text-align: center;
   margin-top: 5rem;
   color: #666;
   font-size: 1.2rem;
+  font-family: var(--font-main);
 }
 
 .items-grid {
@@ -119,6 +129,7 @@ main .empty-state {
   display: flex;
   flex-direction: column;
   transition: all 0.2s ease-in-out;
+  font-family: var(--font-main);
 }
 
 .item-card:hover {
@@ -215,6 +226,7 @@ main .empty-state {
   max-width: 500px;
   border: 1px solid var(--border-color);
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  font-family: var(--font-main);
 }
 .modal-content h2 { margin-bottom: 2rem; color: var(--accent-color); }
 .form-group { margin-bottom: 1.5rem; }
@@ -228,11 +240,13 @@ main .empty-state {
   color: var(--text-primary);
   font-size: 1rem;
   transition: all 0.2s ease;
+  font-family: var(--font-main);
 }
 .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--shadow-light); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
 
-.btn-primary { 
+.btn-primary, .btn-secondary { 
+    font-family: var(--font-main);
     padding: 0.7rem 1.4rem;
     border: none;
     border-radius: 8px;
@@ -240,20 +254,41 @@ main .empty-state {
     font-size: 1rem;
     font-weight: 600;
     transition: all 0.2s ease;
-    background-color: var(--accent-color); 
-    color: var(--bg-dark); 
 }
+.btn-primary { background-color: var(--accent-color); color: var(--bg-dark); }
 .btn-primary:hover { background-color: var(--accent-hover); }
 
-.btn-secondary {
-    padding: 0.7rem 1.4rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    background-color: #333; 
-    color: var(--text-primary); 
-}
+.btn-secondary { background-color: #333; color: var(--text-primary); }
 .btn-secondary:hover { background-color: #444; }
+
+.search-bar {
+    position: relative;
+    width: 100%;
+    max-width: 400px; 
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.8rem 1.5rem 0.8rem 3rem; 
+    background-color: #252525;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: var(--font-main);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 8px var(--shadow-light);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
