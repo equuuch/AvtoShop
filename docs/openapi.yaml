@@ -1,0 +1,407 @@
+openapi: 3.0.0
+info:
+  title: "API программного комплекса «AvtoShop»"
+  description: "Официальная спецификация REST API для взаимодействия с серверной частью программного комплекса «AvtoShop»."
+  version: "1.0.0"
+
+servers:
+  - url: "http://localhost:5000/api"
+    description: "Сервер для локальной разработки"
+
+tags:
+  - name: "Аутентификация"
+    description: "Операции для регистрации и входа пользователей"
+  - name: "Услуги"
+    description: "Управление каталогом услуг"
+  - name: "Отзывы"
+    description: "Управление отзывами клиентов"
+  - name: "Клиенты"
+    description: "Управление базой клиентов"
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - "Аутентификация"
+      summary: "Регистрация нового пользователя"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '201':
+          description: "Пользователь успешно зарегистрирован"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/login:
+    post:
+      tags:
+        - "Аутентификация"
+      summary: "Аутентификация пользователя и получение токена"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredentials'
+      responses:
+        '200':
+          description: "Успешная аутентификация"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /products:
+    get:
+      tags:
+        - "Услуги"
+      summary: "Получение списка всех услуг"
+      responses:
+        '200':
+          description: "Список всех услуг"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      tags:
+        - "Услуги"
+      summary: "Создание новой услуги"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewProduct'
+      responses:
+        '201':
+          description: "Услуга успешно создана"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /products/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: "Уникальный идентификатор услуги"
+    put:
+      tags:
+        - "Услуги"
+      summary: "Обновление существующей услуги"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewProduct'
+      responses:
+        '200':
+          description: "Услуга успешно обновлена"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - "Услуги"
+      summary: "Удаление услуги"
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: "Услуга успешно удалена"
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reviews:
+    get:
+      tags:
+        - "Отзывы"
+      summary: "Получение списка всех отзывов"
+      responses:
+        '200':
+          description: "Список всех отзывов"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Review'
+    post:
+      tags:
+        - "Отзывы"
+      summary: "Добавление нового отзыва"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewReview'
+      responses:
+        '201':
+          description: "Отзыв успешно добавлен"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /reviews/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: "Уникальный идентификатор отзыва"
+    delete:
+      tags:
+        - "Отзывы"
+      summary: "Удаление отзыва"
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: "Отзыв успешно удален"
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /clients:
+    get:
+      tags:
+        - "Клиенты"
+      summary: "Получение списка клиентов"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: "Список всех клиентов"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Client'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags:
+        - "Клиенты"
+      summary: "Добавление нового клиента"
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewClient'
+      responses:
+        '201':
+          description: "Клиент успешно добавлен"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Client'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /clients/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        description: "Уникальный идентификатор клиента"
+    delete:
+      tags:
+        - "Клиенты"
+      summary: "Удаление клиента"
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: "Клиент успешно удален"
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    UserCredentials:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "admin"
+        password:
+          type: string
+          example: "password123"
+    Token:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Диагностика двигателя"
+        description:
+          type: string
+          example: "Полная проверка всех систем двигателя"
+        price:
+          type: number
+          example: 1500
+    NewProduct:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Диагностика двигателя"
+        description:
+          type: string
+          example: "Полная проверка всех систем двигателя"
+        price:
+          type: number
+          example: 1500
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Иван Петров"
+        text:
+          type: string
+          example: "Отличный сервис! Все сделали быстро."
+        rating:
+          type: integer
+          example: 5
+    NewReview:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Иван Петров"
+        text:
+          type: string
+          example: "Отличный сервис! Все сделали быстро."
+        rating:
+          type: integer
+          example: 5
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Сергей Васильев"
+        phone:
+          type: string
+          example: "+79211234567"
+        car:
+          type: string
+          example: "Ford Focus, A123BC78"
+    NewClient:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Сергей Васильев"
+        phone:
+          type: string
+          example: "+79211234567"
+        car:
+          type: string
+          example: "Ford Focus, A123BC78"
+    ApiError:
+      type: object
+      properties:
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: "Некорректный запрос (отсутствуют поля, неверный формат)"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unauthorized:
+      description: "Ошибка аутентификации (неверный логин/пароль)"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Forbidden:
+      description: "Доступ запрещен (недостаточно прав или неверный токен)"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    NotFound:
+      description: "Запрошенный ресурс не найден"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

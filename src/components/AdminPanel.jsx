@@ -257,7 +257,7 @@ const AdminPanel = () => {
           <div className="card-header"><h3>{service.name}</h3><span className="item-price">{service.price} ₽</span></div>
           <p className="item-description">{service.description}</p>
           <div className="card-actions">
-            <button onClick={() => openEditModal(service, 'products')} className="btn-icon"><FiEdit /></button>
+            <button onClick={() => openEditModal(service, 'services')} className="btn-icon"><FiEdit /></button>
             <button onClick={() => handleDelete(service.id, 'products')} className="btn-icon btn-danger"><FiTrash2 /></button>
           </div>
         </div>
