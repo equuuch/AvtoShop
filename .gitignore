@@ -25,3 +25,6 @@ yarn-error.log*
 # Файлы с паролями и секретами
 passwords.txt
 passwords and other.txt
+
+# Игнорировать ВСЕ файлы .env в проекте
+**/.env

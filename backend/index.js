@@ -1,27 +1,17 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
-const { validationResult } = require('express-validator');
-const { validateProduct, validateClient, validateReview } = require('./validators');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-const JWT_SECRET = 'your_super_secret_key_change_this';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(cors());
 app.use(express.json());
-
-const handleValidationErrors = (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-};
-
 
 // --- AUTHENTICATION ROUTES ---
 
@@ -53,7 +43,7 @@ app.post('/api/login', async (req, res) => {
     return res.status(400).json({ error: 'Username and password are required' });
   }
   try {
-    const { rows } = await db.query('SELECT id, username, password_hash FROM users WHERE username = $1', [username]);
+    const { rows } = await db.query('SELECT * FROM users WHERE username = $1', [username]);
     const user = rows[0];
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -87,36 +77,23 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// --- PRODUCTS API ROUTES (SERVICES) ---
+// --- PRODUCTS API ROUTES ---
 
 app.get('/api/products', async (req, res) => {
-    const { search } = req.query;
-    try {
-        let queryText;
-        let queryParams;
-        const baseQuery = 'SELECT id, name, description, price FROM products';
-
-        if (search) {
-            queryText = `${baseQuery} WHERE name ILIKE $1 OR description ILIKE $1 ORDER BY id ASC`;
-            queryParams = [`%${search}%`];
-        } else {
-            queryText = `${baseQuery} ORDER BY id ASC`;
-            queryParams = [];
-        }
-
-        const { rows } = await db.query(queryText, queryParams);
-        res.json(rows);
-    } catch (err) {
-        console.error('Error fetching products:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+  try {
+    const { rows } = await db.query('SELECT * FROM products ORDER BY id ASC');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
-app.post('/api/products', authenticateToken, validateProduct, handleValidationErrors, async (req, res) => {
+app.post('/api/products', authenticateToken, async (req, res) => {
   const { name, description, price } = req.body;
   try {
     const { rows } = await db.query(
-      'INSERT INTO products (name, description, price) VALUES ($1, $2, $3) RETURNING id, name, description, price',
+      'INSERT INTO products (name, description, price) VALUES ($1, $2, $3) RETURNING *',
       [name, description, price]
     );
     res.status(201).json(rows[0]);
@@ -126,12 +103,12 @@ app.post('/api/products', authenticateToken, validateProduct, handleValidationEr
   }
 });
 
-app.put('/api/products/:id', authenticateToken, validateProduct, handleValidationErrors, async (req, res) => {
+app.put('/api/products/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { name, description, price } = req.body;
   try {
     const { rows } = await db.query(
-      'UPDATE products SET name = $1, description = $2, price = $3 WHERE id = $4 RETURNING id, name, description, price',
+      'UPDATE products SET name = $1, description = $2, price = $3 WHERE id = $4 RETURNING *',
       [name, description, price, id]
     );
     if (rows.length === 0) {
@@ -147,7 +124,7 @@ app.put('/api/products/:id', authenticateToken, validateProduct, handleValidatio
 app.delete('/api/products/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await db.query('DELETE FROM products WHERE id = $1 RETURNING id', [id]);
+    const result = await db.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
     if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Product not found' });
     }
@@ -161,20 +138,8 @@ app.delete('/api/products/:id', authenticateToken, async (req, res) => {
 // --- CLIENTS API ROUTES ---
 
 app.get('/api/clients', authenticateToken, async (req, res) => {
-    const { search } = req.query;
     try {
-        let queryText;
-        let queryParams;
-        const baseQuery = 'SELECT id, name, phone, car FROM clients';
-
-        if (search) {
-            queryText = `${baseQuery} WHERE name ILIKE $1 OR phone ILIKE $1 OR car ILIKE $1 ORDER BY id ASC`;
-            queryParams = [`%${search}%`];
-        } else {
-            queryText = `${baseQuery} ORDER BY id ASC`;
-            queryParams = [];
-        }
-        const { rows } = await db.query(queryText, queryParams);
+        const { rows } = await db.query('SELECT * FROM clients ORDER BY id ASC');
         res.json(rows);
     } catch (err) {
         console.error('Error fetching clients:', err);
@@ -182,11 +147,11 @@ app.get('/api/clients', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/clients', authenticateToken, validateClient, handleValidationErrors, async (req, res) => {
+app.post('/api/clients', authenticateToken, async (req, res) => {
     const { name, phone, car } = req.body;
     try {
         const { rows } = await db.query(
-            'INSERT INTO clients (name, phone, car) VALUES ($1, $2, $3) RETURNING id, name, phone, car',
+            'INSERT INTO clients (name, phone, car) VALUES ($1, $2, $3) RETURNING *',
             [name, phone, car]
         );
         res.status(201).json(rows[0]);
@@ -196,12 +161,12 @@ app.post('/api/clients', authenticateToken, validateClient, handleValidationErro
     }
 });
 
-app.put('/api/clients/:id', authenticateToken, validateClient, handleValidationErrors, async (req, res) => {
+app.put('/api/clients/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { name, phone, car } = req.body;
     try {
         const { rows } = await db.query(
-            'UPDATE clients SET name = $1, phone = $2, car = $3 WHERE id = $4 RETURNING id, name, phone, car',
+            'UPDATE clients SET name = $1, phone = $2, car = $3 WHERE id = $4 RETURNING *',
             [name, phone, car, id]
         );
         if (rows.length === 0) {
@@ -217,7 +182,7 @@ app.put('/api/clients/:id', authenticateToken, validateClient, handleValidationE
 app.delete('/api/clients/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await db.query('DELETE FROM clients WHERE id = $1 RETURNING id', [id]);
+        const result = await db.query('DELETE FROM clients WHERE id = $1 RETURNING *', [id]);
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Client not found' });
         }
@@ -231,20 +196,10 @@ app.delete('/api/clients/:id', authenticateToken, async (req, res) => {
 
 // --- REVIEWS API ROUTES ---
 
+// Get all reviews (Public)
 app.get('/api/reviews', async (req, res) => {
-  const { search } = req.query;
   try {
-    let queryText;
-    let queryParams;
-    const baseQuery = 'SELECT id, name, text, rating, created_at FROM reviews';
-    if (search) {
-        queryText = `${baseQuery} WHERE name ILIKE $1 OR text ILIKE $1 ORDER BY created_at DESC`;
-        queryParams = [`%${search}%`];
-    } else {
-        queryText = `${baseQuery} ORDER BY created_at DESC`;
-        queryParams = [];
-    }
-    const { rows } = await db.query(queryText, queryParams);
+    const { rows } = await db.query('SELECT * FROM reviews ORDER BY created_at DESC');
     res.json(rows);
   } catch (err) {
     console.error('Error fetching reviews:', err);
@@ -252,11 +207,18 @@ app.get('/api/reviews', async (req, res) => {
   }
 });
 
-app.post('/api/reviews', validateReview, handleValidationErrors, async (req, res) => {
+// Create a review (Public)
+app.post('/api/reviews', async (req, res) => {
   const { name, text, rating } = req.body;
+  if (!name || !text || !rating) {
+    return res.status(400).json({ error: 'Name, text, and rating are required' });
+  }
+  if (rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+  }
   try {
     const { rows } = await db.query(
-      'INSERT INTO reviews (name, text, rating) VALUES ($1, $2, $3) RETURNING id, name, text, rating, created_at',
+      'INSERT INTO reviews (name, text, rating) VALUES ($1, $2, $3) RETURNING *',
       [name, text, rating]
     );
     res.status(201).json(rows[0]);
@@ -266,12 +228,13 @@ app.post('/api/reviews', validateReview, handleValidationErrors, async (req, res
   }
 });
 
-app.put('/api/reviews/:id', authenticateToken, validateReview, handleValidationErrors, async (req, res) => {
+// Update a review (Admin)
+app.put('/api/reviews/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { name, text, rating } = req.body;
   try {
     const { rows } = await db.query(
-      'UPDATE reviews SET name = $1, text = $2, rating = $3 WHERE id = $4 RETURNING id, name, text, rating, created_at',
+      'UPDATE reviews SET name = $1, text = $2, rating = $3 WHERE id = $4 RETURNING *',
       [name, text, rating, id]
     );
     if (rows.length === 0) {
@@ -284,10 +247,11 @@ app.put('/api/reviews/:id', authenticateToken, validateReview, handleValidationE
   }
 });
 
+// Delete a review (Admin)
 app.delete('/api/reviews/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await db.query('DELETE FROM reviews WHERE id = $1 RETURNING id', [id]);
+    const result = await db.query('DELETE FROM reviews WHERE id = $1 RETURNING *', [id]);
     if (result.rowCount === 0) {
         return res.status(404).json({ error: 'Review not found' });
     }
