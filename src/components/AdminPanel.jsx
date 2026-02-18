@@ -12,6 +12,25 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+// --- Вспомогательная функция для форматирования номера телефона ---
+const formatPhoneNumber = (phoneStr) => {
+    if (!phoneStr) return '';
+    const input = String(phoneStr).replace(/\D/g, '');
+    if (input.length === 0) return '';
+
+    // Нормализация для номеров, начинающихся с 8
+    const normalizedInput = (input.length > 1 && input.startsWith('8')) ? '7' + input.substring(1) : input;
+
+    let formatted = '+';
+    if (normalizedInput.length > 0) formatted += `${normalizedInput.substring(0, 1)}`;
+    if (normalizedInput.length > 1) formatted += ` (${normalizedInput.substring(1, 4)}`;
+    if (normalizedInput.length >= 5) formatted += `) ${normalizedInput.substring(4, 7)}`;
+    if (normalizedInput.length >= 8) formatted += `-${normalizedInput.substring(7, 9)}`;
+    if (normalizedInput.length >= 10) formatted += `-${normalizedInput.substring(9, 11)}`;
+    return formatted.slice(0, 18);
+};
+
+
 // --- Модальные окна ---
 
 const ServiceModal = ({ service, onSave, onClose, isVisible }) => {
@@ -54,23 +73,18 @@ const ServiceModal = ({ service, onSave, onClose, isVisible }) => {
 
 const ClientModal = ({ client, onSave, onClose, isVisible }) => {
     const [edited, setEdited] = useState({});
-    useEffect(() => { 
-        setEdited(client || { name: '', phone: '', car: '' });
+    useEffect(() => {
+        if (isVisible) {
+            const initialPhone = client?.phone ? formatPhoneNumber(client.phone) : '';
+            setEdited(client ? { ...client, phone: initialPhone } : { name: '', phone: '', car: '' });
+        }
     }, [client, isVisible]);
 
     if (!isVisible) return null;
 
     const handlePhoneChange = (e) => {
-        let input = e.target.value.replace(/\D/g, '');
-        if (input.length > 0 && !['7', '8'].includes(input[0])) {
-          input = '7' + input;
-        }
-        let formatted = '+7';
-        if (input.length > 1) formatted += ` (${input.substring(1, 4)}`;
-        if (input.length >= 5) formatted += `) ${input.substring(4, 7)}`;
-        if (input.length >= 8) formatted += `-${input.substring(7, 9)}`;
-        if (input.length >= 10) formatted += `-${input.substring(9, 11)}`;
-        setEdited(prev => ({ ...prev, phone: formatted.slice(0, 18) }));
+        const formatted = formatPhoneNumber(e.target.value);
+        setEdited(prev => ({ ...prev, phone: formatted }));
     };
 
     const handleChange = (e) => {
@@ -78,7 +92,11 @@ const ClientModal = ({ client, onSave, onClose, isVisible }) => {
         setEdited(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => { e.preventDefault(); onSave(edited); };
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const sanitizedPhone = edited.phone.replace(/\D/g, '');
+        onSave({ ...edited, phone: sanitizedPhone });
+    };
 
     return (
       <div className="modal-backdrop">
@@ -86,8 +104,8 @@ const ClientModal = ({ client, onSave, onClose, isVisible }) => {
           <form onSubmit={handleSubmit}>
             <h2>{client?.id ? 'Редактировать клиента' : 'Добавить клиента'}</h2>
             <div className="form-group"><label>ФИО</label><input type="text" name="name" value={edited.name || ''} onChange={handleChange} required /></div>
-            <div className="form-group"><label>Телефон</label><input type="tel" name="phone" value={edited.phone || ''} onChange={handlePhoneChange} placeholder="+7 (999) 123-45-67" required /></div>
-            <div className="form-group"><label>Автомобиль</label><input type="text" name="car" value={edited.car || ''} onChange={handleChange} required /></div>
+            <div className="form-group"><label>Телефон</label><input type="tel" name="phone" value={edited.phone || ''} onChange={handlePhoneChange} placeholder="+7 (999) 123-45-67" /></div>
+            <div className="form-group"><label>Автомобиль</label><input type="text" name="car" value={edited.car || ''} onChange={handleChange} /></div>
             <div className="modal-actions"><button type="button" onClick={onClose} className="btn-secondary">Отмена</button><button type="submit" className="btn-primary">Сохранить</button></div>
           </form>
         </div>
@@ -183,30 +201,38 @@ const AdminPanel = () => {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+    const params = { search: searchQuery };
     try {
-      const [servicesRes, clientsRes, reviewsRes] = await Promise.all([
-          api.get('/products').catch(e => { console.error('Error fetching services:', e); return { data: [] }; }),
-          api.get('/clients').catch(e => { console.error('Error fetching clients:', e); return { data: [] }; }),
-          api.get('/reviews').catch(e => { console.error('Error fetching reviews:', e); return { data: [] }; })
-      ]);
-      setServices(servicesRes.data.sort((a, b) => a.id - b.id));
-      setClients(clientsRes.data.sort((a, b) => a.id - b.id));
-      setReviews(reviewsRes.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+        const [servicesRes, clientsRes, reviewsRes] = await Promise.all([
+            api.get('/products', { params }).catch(e => { console.error('Error fetching services:', e); return { data: [] }; }),
+            api.get('/clients', { params }).catch(e => { console.error('Error fetching clients:', e); return { data: [] }; }),
+            api.get('/reviews', { params }).catch(e => { console.error('Error fetching reviews:', e); return { data: [] }; })
+        ]);
+        setServices(servicesRes.data);
+        setClients(clientsRes.data);
+        setReviews(reviewsRes.data);
     } catch (error) {
-        handleApiError(error)
+        handleApiError(error);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, [handleApiError]);
+}, [searchQuery, handleApiError]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
         navigate('/login');
-    } else {
-        fetchData();
     }
-  }, [navigate, fetchData]);
+  }, [navigate]);
+
+  useEffect(() => {
+      const delayDebounceFn = setTimeout(() => {
+          fetchData();
+      }, 300); // Задержка в 300ms
+
+      return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, fetchData]);
+
 
   const handleLogout = () => {
     localStorage.removeItem('authToken');
@@ -215,15 +241,14 @@ const AdminPanel = () => {
 
   const handleSave = async (item, type) => {
     const isNew = !item.id;
-    // ВАЖНО: Используем 'products' для API услуг
     const apiType = type === 'services' ? 'products' : type;
     const endpoint = `/${apiType}`;
     const method = isNew ? 'post' : 'put';
     const url = isNew ? endpoint : `${endpoint}/${item.id}`;
 
     try {
-      const { data } = await api[method](url, item);
-      await fetchData(); // Перезагружаем все данные для консистентности
+      await api[method](url, item);
+      await fetchData(); 
 
       if (type === 'services') setServiceModalVisible(false);
       else if (type === 'clients') setClientModalVisible(false);
@@ -236,12 +261,11 @@ const AdminPanel = () => {
 
   const handleDelete = async (id, type) => {
     if (!window.confirm(`Вы уверены, что хотите удалить этот элемент?`)) return;
-    // ВАЖНО: Используем 'products' для API услуг
     const apiType = type === 'services' ? 'products' : type;
     const endpoint = `/${apiType}`;
     try {
       await api.delete(`${endpoint}/${id}`);
-      await fetchData(); // Перезагружаем все данные
+      await fetchData();
     } catch (error) {
       handleApiError(error);
     }
@@ -265,37 +289,11 @@ const AdminPanel = () => {
     }
   };
 
-  // --- Логика фильтрации ---
-  const filteredServices = useMemo(() =>
-    services.filter(s =>
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.description.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [services, searchQuery]);
-
-  const filteredClients = useMemo(() =>
-    clients.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.car.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [clients, searchQuery]);
-    
-  const filteredReviews = useMemo(() =>
-    reviews.filter(r =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.text.toLowerCase().includes(searchQuery.toLowerCase())
-    ), [reviews, searchQuery]);
-
-
-  if (isLoading) return <div className="admin-loading">Загрузка...</div>;
-
-  // --- Рендеринг сеток ---
   const renderGrid = (items, type, gridComponent) => {
-      const originalCount = type === 'services' ? services.length : type === 'clients' ? clients.length : reviews.length;
-      if (originalCount === 0) {
-          return <div className="empty-state">{type === 'services' ? 'Услуги' : type === 'clients' ? 'Клиенты' : 'Отзывы'} пока не добавлены.</div>;
-      }
+      if (isLoading) return <div className="admin-loading">Загрузка...</div>;
+      if (!items) return <div className="empty-state">Произошла ошибка при загрузке данных.</div>;
       if (items.length === 0) {
-          return <div className="empty-state">По вашему запросу ничего не найдено.</div>;
+          return <div className="empty-state">{searchQuery ? "По вашему запросу ничего не найдено." : (type === 'services' ? 'Услуги' : type === 'clients' ? 'Клиенты' : 'Отзывы') + " пока не добавлены."}</div>;
       }
       return gridComponent(items);
   };
@@ -321,9 +319,9 @@ const AdminPanel = () => {
         <div key={client.id} className="item-card">
           <div className="card-header">
             <h3>{client.name}</h3>
-            <span className="item-car"><FiTruck style={{ marginRight: '8px'}} />{client.car}</span>
+            <span className="item-car"><FiTruck style={{ marginRight: '8px'}} />{client.car || ''}</span>
           </div>
-          <p className="item-phone"><FiPhone style={{ marginRight: '8px'}} />{client.phone}</p>
+          <p className="item-phone"><FiPhone style={{ marginRight: '8px'}} />{formatPhoneNumber(client.phone) || ''}</p>
           <div className="card-actions">
             <button onClick={() => openEditModal(client, 'clients')} className="btn-icon"><FiEdit /></button>
             <button onClick={() => handleDelete(client.id, 'clients')} className="btn-icon btn-danger"><FiTrash2 /></button>
@@ -352,7 +350,6 @@ const AdminPanel = () => {
     </div>
   );
 
-
   return (
     <div className="admin-panel-fullscreen">
       <header className="admin-panel-header">
@@ -374,9 +371,9 @@ const AdminPanel = () => {
       </div>
 
       <main>
-        {activeTab === 'services' && renderGrid(filteredServices, 'services', servicesGrid)}
-        {activeTab === 'clients' && renderGrid(filteredClients, 'clients', clientsGrid)}
-        {activeTab === 'reviews' && renderGrid(filteredReviews, 'reviews', reviewsGrid)}
+        {activeTab === 'services' && renderGrid(services, 'services', servicesGrid)}
+        {activeTab === 'clients' && renderGrid(clients, 'clients', clientsGrid)}
+        {activeTab === 'reviews' && renderGrid(reviews, 'reviews', reviewsGrid)}
       </main>
 
       <ServiceModal isVisible={isServiceModalVisible} service={editingService} onSave={(item) => handleSave(item, 'services')} onClose={() => setServiceModalVisible(false)} />
