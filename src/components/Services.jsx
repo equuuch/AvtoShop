@@ -8,7 +8,6 @@ const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
 
   useEffect(() => {
-    // Fetch data from the backend. The proxy in package.json will redirect this request.
     axios.get('/api/products')
       .then(response => {
         setServices(response.data);
@@ -17,7 +16,7 @@ const Services = () => {
       .catch(error => {
         console.error('Error fetching services data:', error);
       });
-  }, []); // Empty array means this effect runs once on component mount
+  }, []); 
 
   const handleCardClick = (service) => {
     setSelectedService(service === selectedService ? null : service);
